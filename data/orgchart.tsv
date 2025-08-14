@@ -1,0 +1,86 @@
+id	parentId	name	title	department	location	photo	boardVertex	boardAttach	businessLine	buOrder	email	phone	nodeType	layer	order
+1000		Matei Ladea	Actionar	Actionariat	Bucuresti	assets/9999-left.jpg	top-left				matei@omnia.capital	0721596298			
+1001		Bogdan Georgescu	Actionar	Actionariat	Bucuresti	assets/9999-right.jpg	top-right				bogdan@omnia.capital	0722556365			
+1		Claudiu Corendea	Chief Executive Officer			assets/1.jpg	bottom				claudiu.corendea@dumagas.ro	0742367803			
+2		Emil Vladu	Business Intelligence Manager			assets/2.jpg		left	Administrative	1	emil.vladu@dumagas.ro				
+3	1	Monica Florescu	Director Economic			assets/3.jpg			Administrative	4	monica.florescu@dumagas.ro	0728884922			
+4	1	Stefania Stefanescu	HR Manager			assets/4.jpg			Administrative	3	stefania.stefanescu@dumagas.com				
+5	1	David Predesel	Workshop Manager						Administrative	2	david.predesel@dumagas.com	0739694438			
+6	1	Fabian Stoenica	BUM Logistica			assets/6.jpg			Productive		fabian.stoenica@dumagas.ro	0733031495			
+7	1	Roxana Danciu	BUM Transporturi Specializate			assets/7.jpg			Productive		roxana.danciu@dumagas.ro	0742367803			
+8	1	Marian Calin	BUM International			assets/8.jpg			Productive		marian.calin@dumagas.ro	0728884922			
+9	1	Sorin Sofian	BUM Domestic			assets/9.jpg			Productive		sorin.sofian@dumagas.com	0729209280			
+10	1	Radu Sirbu	BUM GMBH Germania			assets/10.jpg			Productive		radu.sirbu@dumagas.com				
+11	1	Mihaela Gana	Manager Subcontractori						Productive		mihaela.gana@dumagas.com	0729209280			
+L1_2A	2	JURIDIC							Administrative				layer	1	1
+L1_2B	2	IT							Administrative				layer	1	2
+L2_2B1	L1_2B	Golea Laurentiu	External IT Software						Administrative						
+L2_2B2	L1_2B	Claudiu Radulescu	Asistent IT Hardware						Administrative						
+L1_2A1	L1_2A	Voica Catalin	Jurist						Administrative						
+L1_3A	3	ADMINISTRATIV							Administrative				layer	1	1
+L1_3B	3	FINANCIAR CONTABIL							Administrative				layer	1	2
+L1_3A1	L1_3A	Radu Silvia	Servicii Curatenie						Administrative						
+L1_3A2	L1_3A	Maruntelu Camelia-Paula	Bucatareasa						Administrative						
+L1_3A3	L1_3A	Begu Marian	Inginer Electroenergetic						Administrative						
+L1_3B1	L1_3B	Dinca Ioana-Diana	Operator Facturare						Administrative						
+L1_3B2	L1_3B	Sirbi Ileana	Operator Facturare						Administrative						
+L1_3B3	L1_3B	Vlaescu Liliana-Nicoleta	Operator Facturare						Administrative						
+L1_3B4	L1_3B	Velica Aurelia	Economist						Administrative						
+L1_3B5	L1_3B	Lavinia Bogdan	Economist						Administrative						
+L1_4A	4	HR, PEOPLE & CULTURE							Administrative				layer	1	1
+L1_5A	5	SERVICE							Administrative				layer	1	1
+L1_5A1	L1_5A	Novac Cristi	Team Lead						Administrative						
+L1_5A1b	L1_5A1	Bunaiasu Constantin	Mecanic						Administrative						
+L1_5A1c	L1_5A1	Marinescu Nicolae-Madalin	Mecanic						Administrative						
+L1_5A1d	L1_5A1	Maruntelu Marian	Mecanic						Administrative						
+L1_5A1e	L1_5A1	Mititelu Gheorghe	Mecanic						Administrative						
+L1_6A	6	DEPOZIT & LOGISTICA	(Layer 1)						Productive				layer	1	1
+L1_6A1	L1_6A	Baran Cezar	Manager Depozit						Productive						
+L1_6A1a	L1_6A1	Andrut Cristian	Manipulant						Productive						
+L1_6A1b	L1_6A1	Raicovici Cristian	Stivuitorist						Productive						
+L1_6A1c	L1_6A1	Dracea Adrian	Manipulant						Productive						
+L1_6A1d	L1_6A1	Dinut Gheorghe	Picker						Productive						
+L1_6A1e	L1_6A1	Ziane Ayoub	Manipulant						Productive						
+L1_7A	7	TRANSPORT SPECIALIZAT Auto-Transportoare, High & Heavy, Air Liquide							Productive				layer	1	1
+L1_7A1	L1_7A	Manescu Alina	Traffic Manager						Productive						
+L1_7A2	L1_7A	Chilom Victor	Transport Manager						Productive						
+L1_7A3	L1_7A	Combei Ovidiu	Transport Manager						Productive						
+L1_7A4	L1_7A	Floricel Adrian	Transport Manager						Productive						
+L1_8A	8	INTERNATIONAL & ITALIA							Productive				layer	1	1
+L1_8A1	L1_8A	Andrei Delibasa	Team Lead Traffic Manager						Productive						
+L1_8A1a	L1_8A1	Catalina Avram	Traffic Manager						Productive						
+L1_8A1b	L1_8A1	Daniela Iordache	Traffic Manager						Productive						
+L1_8A1c	L1_8A1	Cristian Grigore	Key Account Manager						Productive						
+L1_8A1d	L1_8A1	Andrei Nicolae	Transport Manager						Productive						
+L1_8A2	L1_8A	Mirablea Pauna	Team Lead Transport Manager						Productive						
+L1_8A2a	L1_8A2	Eleonora Pita	Traffic Manager						Productive						
+L1_8A2b	L1_8A2	Danut Preda	Transport Manager						Productive						
+L1_8A2c	L1_8A2	Adrian Dina	Transport Manager						Productive						
+L1_8A2d	L1_8A2	Eugen Calusaru	Drivers Manager						Productive						
+L1_9A	9	DOMESTIC ROMANIA							Productive				layer	1	1
+L1_9A1	L1_9A	Vasilescu Cristina	Traffic Manager		Turda				Productive						
+L1_9A2	L1_9A	Berdut Alin	Team Lead Transport Manager						Productive						
+L1_9A2a	L1_9A2	Baluta Viorica	Traffic Manager						Productive						
+L1_9A2b	L1_9A2	Borcan Ciprian	Traffic Manager						Productive						
+L1_9A2c	L1_9A2	Buliga Denisa	Traffic Manager						Productive						
+L1_9A2d	L1_9A2	Ciurca Gabriel	Transport Manager						Productive						
+L1_9A2e	L1_9A2	Delica Alina	Traffic Manager						Productive						
+L1_9A1a	L1_9A1	Mocan Alexandra	Transport Manager		Turda				Productive						
+L1_9A1b	L1_9A1	Pasc Madalina	Transport Manager		Turda				Productive						
+L1_11A	11	FLOTA SUBCONTRACTORI							Productive				layer	1	1
+L1_10A	10	DOMESTIC GERMANIA							Productive				layer	1	1
+L1_10A1	L1_10A	Laura Puica	Transport Manager cu Rol Administrativ						Productive						
+L1_10A2	L1_10A	Lavinel Cruceru	Transport Manager cu Rol Tehnic						Productive						
+L1_10A3	L1_10A	Eugen Calusaru	Driver's Manager						Productive						
+L1_10A2a	L1_10A2	Bogdan Goiceanu	Dispecerat / Transport Management						Productive						
+L1_10A2b	L1_10A2	Alexandru Culcescu	Dispecerat / Transport Management						Productive						
+L1_10Ac	L1_10A2	Arina Didu	Dispecerat / Transport Management						Productive						
+L1_10Ad	L1_10A2	Denisa Alexandrescu	Operator Introducere si Validare Date						Productive						
+L1_10A1a	L1_10A1	Alexandra Pasare	Dispecerat / Transport Management						Productive						
+L1_10A1b	L1_10A1	Ion Mutascu	Dispecerat / Transport Management						Productive						
+L1_10A1c	L1_10A1	Iasmina Golea	Operator Introducere si Validare Date						Productive						
+L1_10A3a	L1_10A3	Adelin Calusaru	Sef Regional						Productive						
+L1_10A3b	L1_10A3	Alexandru Baroana	Sef Regional						Productive						
+L1_10A3c	L1_10A3	Nicu Bratasanu	Sef Regional						Productive						
+L1_10A3d	L1_10A3	Alin Gavrila	Sef Regional						Productive						
+L1_10A3e	L1_10A3	Catalin Herman	Sef Regional						Productive						

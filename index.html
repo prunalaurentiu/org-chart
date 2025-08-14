@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Organigramă D3 – CA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <style>
+    :root{
+      --bg: #eef3f9;
+      --surface: #f4f7fc;
+      --export-bg: #f4f7fc;
+
+      --panel: rgba(255,255,255,0.9);
+      --panel-stroke: #e5e7eb;
+
+      --text: #101828;
+      --accent: #3f7cff;
+
+      --node: #ffffff;
+      --node-border: #e5e7eb;
+      --shadow: rgba(16,24,40,0.10);
+
+      --link: #c5ccda;
+      --authority: #9aa5b5;
+      --dotted: #9db5ff;
+      --tri-fill: rgba(197,205,217,0.25);
+      --tri-stroke: #c7cdd9;
+
+      --gov-node: #eef4ff;        /* Acționari, CA & CEO */
+      --gov-stroke: #c7d7fe;
+
+      --bu-admin-node: #f4f0ff;   /* Administrative BU */
+      --bu-admin-stroke: #e0d7ff;
+
+      --bu-prod-node: #ecfdf3;    /* Productive BU */
+      --bu-prod-stroke: #c6f0d4;
+    }
+
+    *{ box-sizing:border-box }
+    html, body{ height:100% }
+    body{
+      margin:0;
+      background:
+        radial-gradient(900px 500px at 8% -10%, #eaf2ff 0%, rgba(234,242,255,0) 60%),
+        radial-gradient(800px 460px at 108% 0%, #eafaf2 0%, rgba(234,250,242,0) 60%),
+        radial-gradient(900px 520px at -10% 108%, #fff4e6 0%, rgba(255,244,230,0) 58%),
+        var(--bg);
+      color:var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans";
+    }
+
+    .wrap{ display:grid; grid-template-rows:auto 1fr; height:100vh; gap:12px; padding:14px; }
+
+    .controls{
+      display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+      background:var(--panel); backdrop-filter:blur(6px);
+      border:1px solid var(--panel-stroke); border-radius:16px; padding:10px 12px; box-shadow:0 6px 18px var(--shadow);
+    }
+    .btn, .input{
+      border:1px solid #e5e7eb; background:#fff; color:var(--text);
+      border-radius:12px; padding:8px 10px; font-size:14px; outline:none;
+      transition: transform .04s ease, box-shadow .2s ease, border-color .2s ease;
+    }
+    .btn:hover, .input:focus{ border-color:var(--accent); box-shadow:0 0 0 4px rgba(106,163,255,.12) }
+    .btn:active{ transform:translateY(1px) }
+    .btn.secondary{ background:#f9fafb; border-color:#e5e7eb }
+
+    #chart{
+      background:var(--surface);
+      border:1px solid #e5e7eb; border-radius:18px;
+      position:relative; overflow:hidden;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), 0 10px 24px var(--shadow);
+    }
+    svg{ width:100%; height:100%; display:block }
+
+    .link{ fill:none; stroke:var(--link); stroke-width:1.5px; opacity:.9 }
+    .authority{ stroke:var(--authority); stroke-width:1.6px; fill:none }
+
+    .dotted{
+      stroke:var(--dotted);
+      stroke-width:3px;
+      stroke-dasharray:6 6;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      fill:none;
+    }
+
+    .node{ cursor:pointer }
+    .card{ filter: drop-shadow(0 6px 14px var(--shadow)); }
+    .card rect.bg{ fill:var(--node); stroke:var(--node-border); stroke-width:1px; rx:16; transition:stroke .2s ease, filter .2s ease }
+    .card rect.tint{ rx:16; pointer-events:none; fill:none }
+    .initials{ font-weight:700; font-size:13px; fill:#475467; text-anchor:middle; dominant-baseline:middle; opacity:.9 }
+
+    .name{ font-size:14px; font-weight:700; fill:var(--text) }
+    .title{ font-size:12.5px; fill:#475467 }
+    .meta{ font-size:11.5px; fill:#667085; opacity:.95 }
+    .counts{ font-size:11.5px; fill:#475467; opacity:.95 }
+
+    .node.manager:hover .card rect.bg{ stroke:#c7d2fe; filter: drop-shadow(0 10px 22px rgba(16,24,40,.14)) }
+    .node.manager:active .card rect.bg{ filter: drop-shadow(0 12px 26px rgba(16,24,40,.18)) }
+
+    .tooltip{
+      position:absolute; pointer-events:none; z-index:5; opacity:0; background:#fff;
+      border:1px solid #e4e7ec; color:var(--text); padding:8px 10px; border-radius:10px; font-size:12px;
+      box-shadow: 0 8px 20px var(--shadow); transition:opacity .12s ease; max-width:280px; line-height:1.3;
+    }
+
+    .tri-label{ font-weight:800; font-size:12px; letter-spacing:.6px; fill:#475467 }
+    .static-card{ pointer-events:none }
+
+    .dimmed{ opacity:.18 }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="controls">
+    <input id="search" class="input" type="search" placeholder="Caută nume, titlu sau departament…" list="suggestions" />
+    <datalist id="suggestions"></datalist>
+    <button class="btn secondary" id="btnClear">Clear</button>
+
+    <button class="btn" id="btnFit">Fit to screen</button>
+    <button class="btn secondary" id="btnResetZoom">Reset zoom</button>
+    <button class="btn secondary" id="btnFullscreen">Fullscreen</button>
+    <button class="btn" id="btnToggleAll">Collapse All</button>
+
+    <button class="btn secondary" id="btnExport">Export (PNG/PDF)</button>
+  </div>
+
+  <div id="chart"></div>
+</div>
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+'use strict';
+
+/* ================== DATA (inline fallback) ================== */
+/* RAW rămâne fallback; aplicația încarcă implicit data/orgchart.tsv */
+var RAW = `id\tparentId\tname\ttitle\tdepartment\tlocation\tphoto\tboardVertex\tboardAttach\tbusinessLine\tbuOrder\temail\tphone\tnodeType\tlayer\torder
+1000\t\tMatei Ladea\tActionar\tActionariat\tBucuresti\tassets/9999-left.jpg\ttop-left\t\t\t\tmatei@omnia.capital\t0721596298\t\t\t
+1001\t\tBogdan Georgescu\tActionar\tActionariat\tBucuresti\tassets/9999-right.jpg\ttop-right\t\t\t\tbogdan@omnia.capital\t0722556365\t\t\t
+1\t\tClaudiu Corendea\tChief Executive Officer\t\t\tassets/1.jpg\tbottom\t\t\t\tclaudiu.corendea@dumagas.ro\t0742367803\t\t\t
+2\t\tEmil Vladu\tBusiness Intelligence Manager\t\t\tassets/2.jpg\t\tleft\tAdministrative\t1\temil.vladu@dumagas.ro\t\t\t\t
+3\t1\tMonica Florescu\tDirector Economic\t\t\tassets/3.jpg\t\t\tAdministrative\t4\tmonica.florescu@dumagas.ro\t0728884922\t\t\t
+4\t1\tStefania Stefanescu\tHR Manager\t\t\tassets/4.jpg\t\t\tAdministrative\t3\tstefania.stefanescu@dumagas.com\t\t\t\t
+5\t1\tDavid Predesel\tWorkshop Manager\t\t\t\t\t\tAdministrative\t2\tdavid.predesel@dumagas.com\t0739694438\t\t\t
+6\t1\tFabian Stoenica\tBUM Logistica\t\t\tassets/6.jpg\t\t\tProductive\t\tfabian.stoenica@dumagas.ro\t0733031495\t\t\t
+7\t1\tRoxana Danciu\tBUM Transporturi Specializate\t\t\tassets/7.jpg\t\t\tProductive\t\troxana.danciu@dumagas.ro\t0742367803\t\t\t
+8\t1\tMarian Calin\tBUM International\t\t\tassets/8.jpg\t\t\tProductive\t\tmarian.calin@dumagas.ro\t0728884922\t\t\t
+9\t1\tSorin Sofian\tBUM Domestic\t\t\tassets/9.jpg\t\t\tProductive\t\tsorin.sofian@dumagas.com\t0729209280\t\t\t
+10\t1\tRadu Sirbu\tBUM GMBH Germania\t\t\tassets/10.jpg\t\t\tProductive\t\tradu.sirbu@dumagas.com\t\t\t\t
+11\t1\tMihaela Gana\tManager Subcontractori\t\t\t\t\t\tProductive\t\tmihaela.gana@dumagas.com\t0729209280\t\t\t
+L1_2A\t2\tJURIDIC\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t1
+L1_2B\t2\tIT\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t2
+L2_2B1\tL1_2B\tGolea Laurentiu\tExternal IT Software\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L2_2B2\tL1_2B\tClaudiu Radulescu\tAsistent IT Hardware\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_2A1\tL1_2A\tVoica Catalin\tJurist\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_3A\t3\tADMINISTRATIV\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t1
+L1_3B\t3\tFINANCIAR CONTABIL\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t2
+L1_3A1\tL1_3A\tRadu Silvia\tServicii Curatenie\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_3A2\tL1_3A\tMaruntelu Camelia-Paula\tBucatareasa\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_3A3\tL1_3A\tBegu Marian\tInginer Electroenergetic\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_3B1\tL1_3B\tDinca Ioana-Diana\tOperator Facturare\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_3B2\tL1_3B\tSirbi Ileana\tOperator Facturare\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_3B3\tL1_3B\tVlaescu Liliana-Nicoleta\tOperator Facturare\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_3B4\tL1_3B\tVelica Aurelia\tEconomist\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_3B5\tL1_3B\tLavinia Bogdan\tEconomist\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_4A\t4\tHR, PEOPLE & CULTURE\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t1
+L1_5A\t5\tSERVICE\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t1
+L1_5A1\tL1_5A\tNovac Cristi\tTeam Lead\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_5A1b\tL1_5A1\tBunaiasu Constantin\tMecanic\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_5A1c\tL1_5A1\tMarinescu Nicolae-Madalin\tMecanic\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_5A1d\tL1_5A1\tMaruntelu Marian\tMecanic\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_5A1e\tL1_5A1\tMititelu Gheorghe\tMecanic\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
+L1_6A\t6\tDEPOZIT & LOGISTICA\t(Layer 1)\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_6A1\tL1_6A\tBaran Cezar\tManager Depozit\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_6A1a\tL1_6A1\tAndrut Cristian\tManipulant\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_6A1b\tL1_6A1\tRaicovici Cristian\tStivuitorist\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_6A1c\tL1_6A1\tDracea Adrian\tManipulant\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_6A1d\tL1_6A1\tDinut Gheorghe\tPicker\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_6A1e\tL1_6A1\tZiane Ayoub\tManipulant\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_7A\t7\tTRANSPORT SPECIALIZAT Auto-Transportoare, High & Heavy, Air Liquide\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_7A1\tL1_7A\tManescu Alina\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_7A2\tL1_7A\tChilom Victor\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_7A3\tL1_7A\tCombei Ovidiu\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_7A4\tL1_7A\tFloricel Adrian\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_8A\t8\tINTERNATIONAL & ITALIA\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_8A1\tL1_8A\tAndrei Delibasa\tTeam Lead Traffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_8A1a\tL1_8A1\tCatalina Avram\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_8A1b\tL1_8A1\tDaniela Iordache\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_8A1c\tL1_8A1\tCristian Grigore\tKey Account Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_8A1d\tL1_8A1\tAndrei Nicolae\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_8A2\tL1_8A\tMirablea Pauna\tTeam Lead Transport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_8A2a\tL1_8A2\tEleonora Pita\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_8A2b\tL1_8A2\tDanut Preda\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_8A2c\tL1_8A2\tAdrian Dina\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_8A2d\tL1_8A2\tEugen Calusaru\tDrivers Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_9A\t9\tDOMESTIC ROMANIA\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_9A1\tL1_9A\tVasilescu Cristina\tTraffic Manager\t\tTurda\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_9A2\tL1_9A\tBerdut Alin\tTeam Lead Transport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_9A2a\tL1_9A2\tBaluta Viorica\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_9A2b\tL1_9A2\tBorcan Ciprian\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_9A2c\tL1_9A2\tBuliga Denisa\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_9A2d\tL1_9A2\tCiurca Gabriel\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_9A2e\tL1_9A2\tDelica Alina\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_9A1a\tL1_9A1\tMocan Alexandra\tTransport Manager\t\tTurda\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_9A1b\tL1_9A1\tPasc Madalina\tTransport Manager\t\tTurda\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_11A\t11\tFLOTA SUBCONTRACTORI\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_10A\t10\tDOMESTIC GERMANIA\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_10A1\tL1_10A\tLaura Puica\tTransport Manager cu Rol Administrativ\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A2\tL1_10A\tLavinel Cruceru\tTransport Manager cu Rol Tehnic\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A3\tL1_10A\tEugen Calusaru\tDriver's Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A2a\tL1_10A2\tBogdan Goiceanu\tDispecerat / Transport Management\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A2b\tL1_10A2\tAlexandru Culcescu\tDispecerat / Transport Management\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10Ac\tL1_10A2\tArina Didu\tDispecerat / Transport Management\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10Ad\tL1_10A2\tDenisa Alexandrescu\tOperator Introducere si Validare Date\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A1a\tL1_10A1\tAlexandra Pasare\tDispecerat / Transport Management\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A1b\tL1_10A1\tIon Mutascu\tDispecerat / Transport Management\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A1c\tL1_10A1\tIasmina Golea\tOperator Introducere si Validare Date\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A3a\tL1_10A3\tAdelin Calusaru\tSef Regional\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A3b\tL1_10A3\tAlexandru Baroana\tSef Regional\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A3c\tL1_10A3\tNicu Bratasanu\tSef Regional\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A3d\tL1_10A3\tAlin Gavrila\tSef Regional\t\t\t\t\t\tProductive\t\t\t\t\t\t
+L1_10A3e\tL1_10A3\tCatalin Herman\tSef Regional\t\t\t\t\t\tProductive\t\t\t\t\t\t`;
+
+/* ================== TSV/CSV utils ================== */
+function detectDelimiter(txt){
+  var first = (txt.split(/\r?\n/).find(Boolean) || '');
+  var c = (first.match(/,/g)||[]).length;
+  var t = (first.match(/\t/g)||[]).length;
+  return t > c ? '\t' : ',';
+}
+function parseData(txt){
+  var dsv = d3.dsvFormat(detectDelimiter(txt));
+  var rows = dsv.parse(txt.trim());
+  return rows.map(function(r){
+    var nt = String(r.nodeType || '').trim().toLowerCase();
+    return {
+      id: String(r.id || '').trim(),
+      parentId: String(r.parentId || '').trim(),
+      name: String(r.name || '').trim(),
+      title: String(r.title || '').trim(),
+      department: String(r.department || '').trim(),
+      location: String(r.location || '').trim(),
+      photo: String(r.photo || '').trim(),
+      boardVertex: String(r.boardVertex || '').trim().toLowerCase(),
+      boardAttach: String(r.boardAttach || '').split(/\s*,\s*/).filter(Boolean).map(function(s){ return s.toLowerCase(); }),
+      businessLine: String(r.businessLine || '').trim().toLowerCase(),
+      buOrder: String(r.buOrder || '').trim() === '' ? null : +r.buOrder,
+      email: String(r.email || '').trim(),
+      phone: String(r.phone || '').trim(),
+      nodeType: nt || '', // '', 'layer', 'lead'
+      layer: String(r.layer || '').trim()==='' ? null : +r.layer,
+      order: String(r.order || '').trim()==='' ? null : +r.order
+    };
+  }).filter(function(d){ return d.id; });
+}
+
+/* ================== Globals ================== */
+var ALL = parseData(RAW);
+var TRG = null;
+var dottedTargets = [];
+var ORG = [];
+var withRoot = [];
+var root = null;
+var REPORTS = {};
+var LANE_TOTALS = { BU_ADMIN: 0, BU_PROD: 0 };
+var lastSearchQuery = '';
+var TEAM_COLOR = {};
+var STATE_APPLIED = false;
+
+var VROOT = '__ROOT__';
+var LANE_BASE = 180;
+var laneOffsetAdmin = -LANE_BASE;
+var laneOffsetProd  =  LANE_BASE;
+
+var container = d3.select('#chart');
+var bbox = container.node().getBoundingClientRect();
+var W = bbox.width, H = bbox.height;
+var svg = container.append('svg').attr('viewBox', [0,0,W,H].join(' '));
+var defs = svg.append('defs');
+var g = svg.append('g');
+
+var tooltipEl = document.getElementById('tooltip');
+
+/* airy spacing */
+var nodeCfg = { w: 260, h: 84, gapX: 72, gapY: 108 };
+var tree = d3.tree().nodeSize([nodeCfg.w + nodeCfg.gapX, nodeCfg.h + nodeCfg.gapY]).separation(function(a,b){ return a.parent===b.parent ? 1 : 1.2; });
+
+var zoom = d3.zoom().scaleExtent([0.3, 2.6]).on('zoom', function(ev){ g.attr('transform', ev.transform); });
+svg.call(zoom);
+
+/* ================== External loader w/ fallback ================== */
+var DATA_URL = 'data/orgchart.tsv';
+(function init(){
+  fetch(DATA_URL + '?v=' + Date.now(), { cache: 'no-store' })
+    .then(function(resp){ if(!resp.ok) throw new Error('HTTP ' + resp.status); return resp.text(); })
+    .then(function(txt){ rebuildAll(parseData(txt)); boot(); })
+    .catch(function(){ rebuildAll(parseData(RAW)); boot(); });
+})();
+function boot(){
+  if(location.hash && location.hash.length>1){
+    try{ var st = decodeState(location.hash.slice(1)); applyState(st); STATE_APPLIED = true; }catch(e){}
+  }
+  if(!STATE_APPLIED){
+    expandToLevel(2); // CEO + BU
+    update();
+    fitToScreen();
+  }
+}
+
+/* ================== Helpers for types ================== */
+function isShareholder(d){ return /actionar/i.test(d.title) || /actionariat/i.test(d.department); }
+function isCEO(d){ return /chief\s+executive\s+officer/i.test(d.title); }
+function isLayer(d){ return d && d.nodeType === 'layer'; }
+function isSpacer(d){ return d && d.isSpacer; }
+
+/* ================== Build graph ================== */
+function getTriangleMembers(rows){
+  var tl = rows.find(function(d){ return d.boardVertex==='top-left'; }) || rows.filter(isShareholder)[0];
+  var tr = rows.find(function(d){ return d.boardVertex==='top-right'; }) || rows.filter(isShareholder)[1];
+  var b  = rows.find(function(d){ return d.boardVertex==='bottom'; }) || rows.find(isCEO);
+  return { tl: tl, tr: tr, b: b };
+}
+
+function rebuildAll(rows){
+  ALL = rows.slice();
+  TRG = getTriangleMembers(ALL);
+  dottedTargets = ALL.filter(function(d){ return d.boardAttach && d.boardAttach.length; });
+
+  // exclude shareholders (triangle-only)
+  var ORG_BASE = ALL.filter(function(d){ var v=(d.boardVertex||'').toLowerCase(); return v!=='top-left' && v!=='top-right'; })
+                    .map(function(d){ return Object.assign({}, d); });
+
+  var CEO_ID = (TRG.b && TRG.b.id) ? String(TRG.b.id) : null;
+  var BU_ADMIN = { id:'BU_ADMIN', parentId:CEO_ID, name:'Administrative Business Units', isLane:true, lane:'administrative', businessLine:'administrative' };
+  var BU_PROD  = { id:'BU_PROD',  parentId:CEO_ID, name:'Productive Business Units',     isLane:true, lane:'productive',    businessLine:'productive' };
+
+  ORG = ORG_BASE.map(function(d){ return Object.assign({}, d); });
+
+  if(CEO_ID){
+    // redirect CEO direct reports into BUs
+    ORG.forEach(function(d){
+      if(String(d.id)===CEO_ID) return;
+      if(String(d.parentId||'')===CEO_ID){
+        var desired = String(d.businessLine||'').toLowerCase();
+        if(desired==='administrative') d.parentId = BU_ADMIN.id;
+        else if(desired==='productive') d.parentId = BU_PROD.id;
+      }
+    });
+    // force Emil (id=2) under Administrative
+    var emil = ORG.find(function(d){ return String(d.id)==='2'; }); if(emil) emil.parentId = BU_ADMIN.id;
+  }
+  if(CEO_ID){ ORG.push(BU_ADMIN, BU_PROD); }
+
+  /* ✂️ Eliminat keepout de sub Ștefania (SPACER_STEF_*) */
+
+  withRoot = [{ id:VROOT, parentId:'', name:'', title:'' }].concat(
+    ORG.map(function(d){ var c=Object.assign({},d); c.parentId = c.parentId || VROOT; return c; })
+  );
+
+  var stratify = d3.stratify().id(function(d){ return d.id; }).parentId(function(d){ return d.parentId || null; });
+  root = stratify(withRoot);
+  root.each(function(n){ if(n.children) n.children.sort(siblingSort); });
+
+  computeReportCounts();
+  computeLaneTotals();
+  computeTeamPalette();
+  update();
+  buildSuggestions();
+}
+
+/* ================== Sort (order > buOrder > title > name) ================== */
+function siblingSort(a,b){
+  var ao = a.data.order==null ? Infinity : a.data.order;
+  var bo = b.data.order==null ? Infinity : b.data.order;
+  if(ao!==bo) return ao-bo;
+
+  var aBu = a.data.buOrder==null ? Infinity : a.data.buOrder;
+  var bBu = b.data.buOrder==null ? Infinity : b.data.buOrder;
+  if(aBu!==bBu) return aBu-bBu;
+
+  var at = (a.data.title||'').localeCompare(b.data.title||''); if(at!==0) return at;
+  return (a.data.name||'').localeCompare(b.data.name||'');
+}
+
+/* ================== Reporting ================== */
+function computeReportCounts(){
+  var stratify = d3.stratify().id(function(d){ return d.id; }).parentId(function(d){ return d.parentId || null; });
+  var fullRoot = stratify(withRoot);
+  var nodes = fullRoot.descendants();
+
+  var byId = {};
+  nodes.forEach(function(n){ byId[n.data.id]=n; });
+
+  var rawChildren = {};
+  nodes.forEach(function(n){ rawChildren[n.data.id]=[]; });
+  nodes.forEach(function(n){
+    if(!n.parent) return;
+    var pid = n.parent.data.id;
+    if(pid==='BU_ADMIN' || pid==='BU_PROD'){
+      var ceoId = (TRG && TRG.b && TRG.b.id) ? String(TRG.b.id) : null;
+      pid = ceoId || pid;
+    }
+    if(!rawChildren[pid]) rawChildren[pid]=[];
+    rawChildren[pid].push(n.data.id);
+  });
+
+  function isCountable(id){
+    var d = byId[id] && byId[id].data;
+    if(!d) return false;
+    if(d.id===VROOT) return false;
+    if(d.id==='BU_ADMIN' || d.id==='BU_PROD') return false;
+    if(d.isSpacer) return false;
+    if(d.nodeType === 'layer') return false;
+    return true;
+  }
+
+  function countNonLayerDesc(id){
+    var total = 0;
+    var stack = (rawChildren[id] || []).slice();
+    while(stack.length){
+      var x = stack.pop();
+      var dx = byId[x] && byId[x].data;
+      if(!dx) continue;
+      if(dx.nodeType === 'layer' || dx.isSpacer || dx.id==='BU_ADMIN' || dx.id==='BU_PROD' || dx.id===VROOT){
+        (rawChildren[x]||[]).forEach(function(c){ stack.push(c); });
+        continue;
+      }
+      total += 1;
+      (rawChildren[x]||[]).forEach(function(c){ stack.push(c); });
+    }
+    return total;
+  }
+
+  function firstNonLayerChildren(id){
+    var result = new Set();
+    var queue = (rawChildren[id] || []).map(function(cid){ return { id: cid, depth: 1 }; });
+
+    while(queue.length){
+      var cur = queue.shift();
+      var d = byId[cur.id] && byId[cur.id].data;
+      if(!d) continue;
+
+      if(d.nodeType === 'layer' || d.isSpacer){
+        (rawChildren[cur.id]||[]).forEach(function(k){ queue.push({ id:k, depth: cur.depth+1 }); });
+      }else if(d.id!=='BU_ADMIN' && d.id!=='BU_PROD' && d.id!==VROOT){
+        result.add(cur.id);
+      }
+    }
+    return Array.from(result);
+  }
+
+  REPORTS = {};
+  nodes.forEach(function(n){
+    var id = n.data.id;
+    if(id===VROOT) return;
+    var direct = firstNonLayerChildren(id).filter(isCountable).length;
+    var total  = countNonLayerDesc(id);
+    REPORTS[id] = { direct: direct, total: total };
+  });
+}
+
+/* ================== BU totals (exclude 'layer') ================== */
+function computeLaneTotals(){
+  var stratify = d3.stratify().id(function(d){ return d.id; }).parentId(function(d){ return d.parentId || null; });
+  var fullRoot = stratify(withRoot);
+  var all = fullRoot.descendants();
+
+  function byId(id){ return all.find(function(n){ return n.data.id===id; }); }
+  function isDesc(n, anc){ var p=n; while(p){ if(p===anc) return true; p=p.parent; } return false; }
+  function countUnder(anchor){
+    if(!anchor) return 0;
+    return all.filter(function(n){
+      var d=n.data;
+      if(n===anchor) return false;
+      if(!isDesc(n,anchor)) return false;
+      if(d.isSpacer) return false;
+      if(d.nodeType === 'layer') return false;
+      if(d.id==='BU_ADMIN' || d.id==='BU_PROD' || d.id===VROOT) return false;
+      return true;
+    }).length;
+  }
+  var buA = byId('BU_ADMIN'), buP = byId('BU_PROD');
+  LANE_TOTALS = { BU_ADMIN: countUnder(buA), BU_PROD: countUnder(buP) };
+}
+
+/* ================== Team palette (pastel) ================== */
+function computeTeamPalette(){
+  var palette = ['#7aa7ff','#7ad1a0','#ffd27a','#ff9ca1','#b99cff','#7bdad4','#ffb084','#a9df6b','#9cd6ff','#f7b6ff','#b6f0a9','#ffe29a'];
+  TEAM_COLOR = {};
+  function walkAll(n, fn){ fn(n); (n.children||[]).forEach(function(c){ walkAll(c,fn); }); (n._children||[]).forEach(function(c){ walkAll(c,fn); }); }
+  var heads = [];
+  walkAll(root, function(n){ if(n.parent && (n.parent.data.id==='BU_ADMIN' || n.parent.data.id==='BU_PROD')) heads.push(n); });
+  heads.sort(function(a,b){
+    var la = (a.parent && a.parent.data.id)==='BU_ADMIN' ? 0 : 1;
+    var lb = (b.parent && b.parent.data.id)==='BU_ADMIN' ? 0 : 1;
+    if(la!==lb) return la-lb;
+    var ao = a.data.order==null?Infinity:a.data.order;
+    var bo = b.data.order==null?Infinity:b.data.order;
+    if(ao!==bo) return ao-bo;
+    var aBu = a.data.buOrder==null?Infinity:a.data.buOrder;
+    var bBu = b.data.buOrder==null?Infinity:b.data.buOrder;
+    if(aBu!==bBu) return aBu-bBu;
+    return (a.data.name||'').localeCompare(b.data.name||'');
+  });
+  heads.forEach(function(h,i){ TEAM_COLOR[h.data.id] = palette[i % palette.length]; });
+}
+
+/* ================== Color helpers ================== */
+function hexToRgb(hex){ hex=String(hex||'').replace('#',''); if(hex.length===3) hex=hex.split('').map(function(c){return c+c;}).join(''); var num=parseInt(hex,16)||0; return {r:(num>>16)&255,g:(num>>8)&255,b:num&255}; }
+function rgbToHex(r,g,b){ function c(n){ var s=n.toString(16); return s.length===1?'0'+s:s; } return '#'+c(r)+c(g)+c(b); }
+function lightenHex(hex,p){ var c=hexToRgb(hex); var r=Math.round(c.r+(255-c.r)*p), g=Math.round(c.g+(255-c.g)*p), b=Math.round(c.b+(255-c.b)*p); return rgbToHex(r,g,b); }
+function ensureTeamGradient(id, base){
+  var gid = 'grad_team_'+id;
+  if(document.getElementById(gid)) return gid;
+  var gEl = defs.append('linearGradient').attr('id',gid).attr('x1','0').attr('y1','0').attr('x2','1').attr('y2','1');
+  var top = lightenHex(base, .35);
+  gEl.append('stop').attr('offset','0%').attr('stop-color', top).attr('stop-opacity', .28);
+  gEl.append('stop').attr('offset','100%').attr('stop-color', base).attr('stop-opacity', .18);
+  return gid;
+}
+function ensureSoftCardGradient(){
+  var gid = 'grad_card_soft';
+  if(document.getElementById(gid)) return gid;
+  var gEl = defs.append('linearGradient').attr('id', gid).attr('x1','0').attr('y','0').attr('x2','1').attr('y2','1');
+  gEl.append('stop').attr('offset','0%').attr('stop-color','#f0f6ff').attr('stop-opacity', .35);
+  gEl.append('stop').attr('offset','100%').attr('stop-color','#ffffff').attr('stop-opacity', 0);
+  return gid;
+}
+
+/* ================== Lanes & positions ================== */
+function nodeLane(n){
+  var d = n && n.data || {};
+  if(d.lane) return d.lane;
+  if(d.businessLine) return d.businessLine;
+  var cur=n? n.parent: null;
+  while(cur){ if(cur.data && (cur.data.lane || cur.data.businessLine)) return (cur.data.lane || cur.data.businessLine); cur=cur.parent; }
+  return '';
+}
+function vx(n){
+  var lane = nodeLane(n);
+  var off = 0;
+  if(lane==='administrative') off += laneOffsetAdmin;
+  else if(lane==='productive') off += laneOffsetProd;
+  var ceo = (TRG && TRG.b) ? String(TRG.b.id) : null;
+  if(String(n.data.id)===ceo) off = 0;
+  return n.x + off;
+}
+function vy(n){ return n.y; }
+
+/* ================== Cards ================== */
+function getInitials(name){
+  var p = String(name||'').trim().split(/\s+/).filter(Boolean);
+  var a = (p[0] && p[0][0]) ? p[0][0] : '';
+  var b = (p[1] && p[1][0]) ? p[1][0] : '';
+  return a.toUpperCase() + b.toUpperCase();
+}
+function measureMaxTextWidth(gCard){
+  var widths=[];
+  gCard.selectAll('text.name, text.title, text.meta, text.counts').each(function(){
+    var n=this;
+    if(n && n.getComputedTextLength) widths.push(n.getComputedTextLength());
+  });
+  return widths.length ? Math.max.apply(null,widths) : 0;
+}
+function buildCard(sel){
+  sel.append('g').attr('class','card').each(function(d){
+    var gCard = d3.select(this);
+    var W=nodeCfg.w, H=nodeCfg.h, avD=56, avR=avD/2, avCX=-W/2+12+avR, avCY=0;
+
+    var bg = gCard.append('rect').attr('class','bg').attr('x',-W/2).attr('y',-H/2).attr('width',W).attr('height',H);
+    var tint = gCard.append('rect').attr('class','tint').attr('x',-W/2).attr('y',-H/2).attr('width',W).attr('height',H)
+         .attr('fill','url(#'+ensureSoftCardGradient()+')');
+
+    var clipId='clip_'+d.data.id;
+    if(!document.getElementById(clipId)){
+      var cp = defs.append('clipPath').attr('id',clipId);
+      cp.append('circle').attr('cx',avCX).attr('cy',avCY).attr('r',avR);
+    }
+    gCard.append('circle').attr('cx',avCX).attr('cy',avCY).attr('r',avR).attr('fill','#f3f6fb').attr('stroke','#d0d5dd').attr('stroke-width',1.2);
+    if(d.data.photo){
+      gCard.append('image').attr('href',d.data.photo).attr('x',avCX-avR).attr('y',avCY-avR).attr('width',avD).attr('height',avD)
+           .attr('preserveAspectRatio','xMidYMid slice').attr('clip-path','url(#'+clipId+')');
+    }else{
+      gCard.append('text').attr('class','initials').attr('x',avCX).attr('y',avCY+1).text(getInitials(d.data.name));
+    }
+
+    var tx=(-W/2+12)+avD+10, ty=-H/2+16;
+    gCard.append('text').attr('class','name').attr('x',tx).attr('y',ty+6);
+    gCard.append('text').attr('class','title').attr('x',tx).attr('y',ty+26);
+    gCard.append('text').attr('class','meta').attr('x',tx).attr('y',ty+46);
+    gCard.append('text').attr('class','counts').attr('x',tx).attr('y',ty+62);
+  });
+}
+
+/* ================== Layout update ================== */
+function hasOnlySpacerChildren(d){
+  return !!(d && d.children && d.children.length && d.children.every(function(c){ return !!c.data.isSpacer; }));
+}
+function collapseSubtree(n){
+  if(!n) return;
+  if(n.children && n.children.length){ n._children=n.children; n.children=null; }
+  (n._children||[]).forEach(collapseSubtree);
+}
+function toggle(d){
+  if(hasOnlySpacerChildren(d)) return;
+  var opening = !!d._children;
+  if(d.children){ d._children=d.children; d.children=null; }
+  else{ d.children=d._children; d._children=null; }
+
+  // Open rules „one level at a time”
+  if(opening){
+    // BU -> arată doar managerii
+    if(d.data.id==='BU_ADMIN' || d.data.id==='BU_PROD'){
+      (d.children||[]).forEach(function(c){ collapseSubtree(c); });
+    }
+    // Manager (copil al BU) -> arată doar containerele L1
+    else if(d.parent && (d.parent.data.id==='BU_ADMIN' || d.parent.data.id==='BU_PROD')){
+      (d.children||[]).forEach(function(c){ collapseSubtree(c); });
+    }
+    // Layer -> arată doar copiii direcți
+  }
+
+  update();
+}
+
+function elbow(l){
+  var x1=vx(l.source), y1=vy(l.source)+nodeCfg.h/2;
+  var x2=vx(l.target), y2=vy(l.target)-nodeCfg.h/2;
+  return "M"+x1+","+y1+" V"+((y1+y2)/2)+" H"+x2+" V"+y2;
+}
+
+/* pentru atașări în 90° (ex. Emil din triunghi) */
+function rightAngleAttach(xStart, yStart, xEnd, yEnd){
+  return "M"+xStart+","+yStart+" H"+xEnd+" V"+yEnd;
+}
+
+function update(){
+  computeReportCounts();
+  computeLaneTotals();
+
+  var layout = tree(root);
+  var nodesAll = layout.descendants().filter(function(d){ return d.data.id!==VROOT; });
+  var linksAll = layout.links().filter(function(l){ return l.source.data.id!==VROOT; });
+  var nodes = nodesAll.filter(function(n){ return !n.data.isSpacer; });
+
+  // dynamic lane offsets
+  var buA = nodesAll.find(function(n){ return n.data.id==='BU_ADMIN'; });
+  var buP = nodesAll.find(function(n){ return n.data.id==='BU_PROD'; });
+  function isDesc(n, anc){ var p=n; while(p){ if(p===anc) return true; p=p.parent; } return false; }
+  function subtreeOf(a){ return !a? [] : nodes.filter(function(n){ return n===a || isDesc(n,a); }); }
+
+  var gapEdge = nodeCfg.gapX + 12;
+  laneOffsetAdmin = -LANE_BASE;
+  laneOffsetProd  =  LANE_BASE;
+
+  var isExpandedA = !!(buA && buA.children && buA.children.length);
+  var isExpandedP = !!(buP && buP.children && buP.children.length);
+  if(isExpandedA && !isExpandedP){
+    var arrA = subtreeOf(buA);
+    var rightEdge = d3.max(arrA, function(n){ return n.x + laneOffsetAdmin; }) + nodeCfg.w/2;
+    var targetLeft = rightEdge + gapEdge;
+    laneOffsetProd = (targetLeft + nodeCfg.w/2) - (buP ? buP.x : 0);
+  }else if(isExpandedP && !isExpandedA){
+    var arrP = subtreeOf(buP);
+    var leftEdge = d3.min(arrP, function(n){ return n.x + laneOffsetProd; }) - nodeCfg.w/2;
+    var targetRight = leftEdge - gapEdge;
+    laneOffsetAdmin = (targetRight - nodeCfg.w/2) - (buA ? buA.x : 0);
+  }
+
+  var nodeSet = new Set(nodes);
+  var links = linksAll.filter(function(l){ return nodeSet.has(l.source) && nodeSet.has(l.target); });
+
+  // links
+  var link = g.selectAll('path.link').data(links, function(d){ return d.target.id; });
+  link.join(
+    function(enter){ return enter.append('path').attr('class','link').attr('d',elbow).attr('opacity',0).transition().duration(350).attr('opacity',1); },
+    function(upd){ return upd.transition().duration(350).attr('d',elbow); },
+    function(exit){ return exit.transition().duration(200).attr('opacity',0).remove(); }
+  );
+
+  // nodes
+  var nodeSel = g.selectAll('g.node').data(nodes, function(d){ return d.id; });
+  var enter = nodeSel.enter().append('g').attr('class','node')
+    .attr('transform', function(d){ return "translate("+vx(d)+","+vy(d)+")"; })
+    .on('click', function(ev,d){ toggle(d); })
+    .on('mousemove', function(ev,d){ showTooltip(ev,d); })
+    .on('mouseleave', function(){ hideTooltip(); });
+
+  buildCard(enter);
+
+  nodeSel.merge(enter).transition().duration(350)
+    .attr('transform', function(d){ return "translate("+vx(d)+","+vy(d)+")"; })
+    .on('end', function(){ applySearchDim(); });
+
+  nodeSel.exit().transition().duration(200).style('opacity',0).remove();
+
+  // mark managers, set texts, fill/tint, resize where needed
+  var merged = g.selectAll('g.node');
+  merged.classed('manager', function(d){
+    return !!(d.children && d.children.length) || !!(d._children && d._children.length);
+  });
+
+  merged.each(function(d){
+    var sel = d3.select(this);
+    var nameSel  = sel.select('text.name');
+    var titleSel = sel.select('text.title');
+    var metaSel  = sel.select('text.meta');
+    var countsSel= sel.select('text.counts');
+    var tint     = sel.select('rect.tint');
+    var bgRect   = sel.select('rect.bg');
+
+    var avD=56;
+    var baseInnerLeftPadding = avD + 22;
+
+    if(d.data.id==='BU_ADMIN'){
+      nameSel.text('Administrative');
+      titleSel.text('Business Units');
+      metaSel.text('');
+    }else if(d.data.id==='BU_PROD'){
+      nameSel.text('Productive');
+      titleSel.text('Business Units');
+      metaSel.text('');
+    }else{
+      nameSel.text(d.data.name || '(fără nume)');
+      titleSel.text(d.data.title || (isLayer(d.data) ? '(Layer '+(d.data.layer||'')+')' : ''));
+      var contacts = [];
+      if(d.data.location) contacts.push(d.data.location);
+      if(d.data.email) contacts.push(d.data.email);
+      if(d.data.phone) contacts.push(d.data.phone);
+      metaSel.text(contacts.join(' • '));
+    }
+
+    // lărgim cardul dacă textul nu încape
+    var needed = baseInnerLeftPadding + measureMaxTextWidth(sel.select('g.card')) + 12;
+    var needW = Math.max(nodeCfg.w, needed);
+    if(needW > nodeCfg.w){
+      var left = -nodeCfg.w/2;
+      bgRect.attr('x', left).attr('width', needW);
+      tint .attr('x', left).attr('width', needW);
+    }
+
+    // counts (reguli noi)
+    if(!countsSel.empty()) countsSel.text(getCountsText(d));
+
+    // Role-based bg/stroke
+    var ceoId = (TRG && TRG.b) ? String(TRG.b.id) : null;
+    var fillVar = 'var(--node)', strokeVar = 'var(--node-border)';
+    if(String(d.data.id)===ceoId){
+      fillVar = 'var(--gov-node)'; strokeVar = 'var(--gov-stroke)';
+    }else if(d.data.id==='BU_ADMIN'){
+      fillVar = 'var(--bu-admin-node)'; strokeVar = 'var(--bu-admin-stroke)';
+    }else if(d.data.id==='BU_PROD'){
+      fillVar = 'var(--bu-prod-node)'; strokeVar = 'var(--bu-prod-stroke)';
+    }
+    bgRect.style('fill', fillVar).style('stroke', strokeVar);
+
+    // team tint by manager (child of BU)
+    var head = teamHead(d);
+    if(head && TEAM_COLOR[head.data.id]){
+      var gid = ensureTeamGradient(head.data.id, TEAM_COLOR[head.data.id]);
+      tint.style('fill', 'url(#'+gid+')');
+    }else{
+      tint.style('fill', 'url(#'+ensureSoftCardGradient()+')');
+    }
+  });
+
+  drawCATriangle(nodesAll);
+}
+
+/* ================== Counts rules ================== */
+function getCountsText(d){
+  if (d.data.id === 'BU_ADMIN' || d.data.id === 'BU_PROD') {
+    var n = LANE_TOTALS[d.data.id] || 0;
+    return 'total în unitate: ' + n;
+  }
+  var rep = REPORTS[d.data.id];
+  if (!rep) return '';
+  var ceoId = (TRG && TRG.b) ? String(TRG.b.id) : null;
+
+  if (String(d.data.id) === ceoId) {
+    return 'raporti total: ' + (rep.total || 0);
+  }
+  if ((rep.total || 0) <= 0) return '';
+  if (rep.direct === rep.total) {
+    return 'raporti direct: ' + rep.direct;
+  }
+  return 'raporti direct: ' + rep.direct + '  •  ' + 'raporti total: ' + rep.total;
+}
+
+function teamHead(n){
+  var cur=n;
+  while(cur && cur.parent){
+    if(cur.parent.data && (cur.parent.data.id==='BU_ADMIN' || cur.parent.data.id==='BU_PROD')) return cur;
+    cur = cur.parent;
+  }
+  return null;
+}
+
+/* ================== Triangle CA ================== */
+function drawStaticCard(sel, person, cx, cy){
+  if(!person) return;
+  var W=nodeCfg.w, H=nodeCfg.h, avD=56, avR=avD/2, avCX=cx - W/2 + 12 + avR, avCY=cy;
+
+  var gCard = sel.append('g').attr('class','static-card');
+  gCard.append('rect').attr('class','bg').attr('x',cx-W/2).attr('y',cy-H/2).attr('width',W).attr('height',H)
+    .attr('fill', 'var(--gov-node)').attr('stroke', 'var(--gov-stroke)').attr('rx',16);
+  gCard.append('rect').attr('class','tint').attr('x',cx-W/2).attr('y',cy-H/2).attr('width',W).attr('height',H)
+    .attr('fill','url(#'+ensureSoftCardGradient()+')').attr('rx',16);
+
+  var clipId = 'clip_static_'+person.id;
+  if(!document.getElementById(clipId)){
+    var cp = defs.append('clipPath').attr('id',clipId);
+    cp.append('circle').attr('cx',avCX).attr('cy',avCY).attr('r',avR);
+  }
+  gCard.append('circle').attr('cx',avCX).attr('cy',avCY).attr('r',avR).attr('fill','#f3f6fb').attr('stroke','#d0d5dd').attr('stroke-width',1.2);
+  if(person.photo){
+    gCard.append('image').attr('href',person.photo).attr('x',avCX-avR).attr('y',avCY-avR).attr('width',avD).attr('height',avD)
+      .attr('preserveAspectRatio','xMidYMid slice').attr('clip-path','url(#'+clipId+')');
+  }else{
+    gCard.append('text').attr('class','initials').attr('x',avCX).attr('y',avCY+1).text(getInitials(person.name));
+  }
+
+  var tx = (cx - W/2 + 12) + avD + 10, ty = cy - H/2 + 16;
+  gCard.append('text').attr('class','name').attr('x',tx).attr('y',ty+6).text(person.name||'');
+  gCard.append('text').attr('class','title').attr('x',tx).attr('y',ty+26).text(person.title||'');
+  var meta = [person.department, person.location].filter(Boolean).join(' • ');
+  gCard.append('text').attr('class','meta').attr('x',tx).attr('y',ty+46).text(meta);
+}
+
+function drawCATriangle(visibleNodesAll){
+  g.selectAll('g.ca').remove();
+  var ca = g.append('g').attr('class','ca');
+
+  var layout = tree(root);
+  var nodesAll = layout.descendants().filter(function(d){ return d.data.id!==VROOT; });
+  var ceoNode = nodesAll.find(function(n){ return TRG && TRG.b && String(n.data.id)===String(TRG.b.id); });
+  if(!ceoNode){ return; }
+
+  var cx = vx(ceoNode);
+
+  var ceoTopY = vy(ceoNode) - nodeCfg.h/2;
+  var bottomY = ceoTopY;
+  var height = 220, halfWidth = 260;
+
+  var A = { x: cx - halfWidth, y: bottomY - height };
+  var B = { x: cx + halfWidth, y: bottomY - height };
+  var C = { x: cx, y: bottomY };
+
+  // triangle
+  ca.append('path')
+    .attr('d', "M"+A.x+","+A.y+" L"+B.x+","+B.y+" L"+C.x+","+C.y+" Z")
+    .attr('fill', 'var(--tri-fill)')
+    .attr('stroke', 'var(--tri-stroke)');
+
+  // label
+  ca.append('text').attr('class','tri-label')
+    .attr('x', cx).attr('y', bottomY - height/2 - 6)
+    .attr('text-anchor','middle')
+    .text('CONSILIUL DE ADMINISTRAȚIE');
+
+  // shareholders – carduri pe colțuri
+  drawStaticCard(ca, TRG.tl, A.x, A.y - (nodeCfg.h/2));
+  drawStaticCard(ca, TRG.tr, B.x, B.y - (nodeCfg.h/2));
+
+  // raportare CEO → laturile triunghiului
+  ca.append('path').attr('class','authority')
+    .attr('d', "M"+cx+","+ceoTopY+" L"+C.x+","+C.y+" L"+A.x+","+A.y);
+  ca.append('path').attr('class','authority')
+    .attr('d', "M"+cx+","+ceoTopY+" L"+C.x+","+C.y+" L"+B.x+","+B.y);
+
+  // dotted attaches – doar pentru noduri vizibile
+  var visible = new Set(visibleNodesAll.map(function(n){ return String(n.data.id); }));
+  var attachLeft  = dottedTargets.filter(function(d){ return d.boardAttach.indexOf('left')!==-1  && visible.has(String(d.id)); });
+  var attachRight = dottedTargets.filter(function(d){ return d.boardAttach.indexOf('right')!==-1 && visible.has(String(d.id)); });
+
+  function findVisibleNodeById(id){
+    return visibleNodesAll.find(function(n){ return String(n.data.id)===String(id); }) || null;
+  }
+
+  var tAnchor = 0.65;
+  var anchorLeft  = { x: A.x + (C.x - A.x)*tAnchor, y: A.y + (C.y - A.y)*tAnchor };
+  var anchorRight = { x: B.x + (C.x - B.x)*tAnchor, y: B.y + (C.y - B.y)*tAnchor };
+
+  attachLeft.forEach(function(d){
+    var n=findVisibleNodeById(d.id); if(!n) return;
+    var xEnd=vx(n), yEnd=vy(n)-nodeCfg.h/2;
+    ca.append('path').attr('class','dotted')
+      .attr('d', rightAngleAttach(anchorLeft.x, anchorLeft.y, xEnd, yEnd));
+  });
+  attachRight.forEach(function(d){
+    var n=findVisibleNodeById(d.id); if(!n) return;
+    var xEnd=vx(n), yEnd=vy(n)-nodeCfg.h/2;
+    ca.append('path').attr('class','dotted')
+      .attr('d', rightAngleAttach(anchorRight.x, anchorRight.y, xEnd, yEnd));
+  });
+}
+
+/* ================== Fit to screen ================== */
+function fitToScreen(){
+  var layout = tree(root);
+  var nodesAll = layout.descendants().filter(function(d){ return d.data.id!==VROOT && !d.data.isSpacer; });
+  var xExtent = d3.extent(nodesAll, function(d){ return vx(d); });
+  var yExtent = d3.extent(nodesAll, function(d){ return vy(d); });
+
+  var extraTop = 360; // triangle area
+  var width = (xExtent[1]-xExtent[0]) + nodeCfg.w + 180;
+  var height= (yExtent[1]-yExtent[0]) + nodeCfg.h + 320 + extraTop;
+
+  var chartBox = document.getElementById('chart').getBoundingClientRect();
+  var Wc=chartBox.width, Hc=chartBox.height;
+  var scale = Math.min(Wc/width, Hc/height, 1.1);
+  var tx = (Wc - width*scale)/2 - xExtent[0]*scale + 60;
+  var ty = (Hc - height*scale)/2 - yExtent[1]*scale + 130 + (extraTop/2);
+
+  svg.transition().duration(450).call(zoom.transform, d3.zoomIdentity.translate(tx,ty).scale(scale));
+}
+
+/* ================== Search ================== */
+function buildSuggestions(){
+  var dl = document.getElementById('suggestions');
+  dl.innerHTML='';
+  var seen=new Set();
+  ALL.forEach(function(r){
+    ['name','title','department'].forEach(function(k){
+      var val = String(r[k]||'').trim();
+      if(!val || seen.has(val)) return;
+      seen.add(val);
+      var opt=document.createElement('option'); opt.value=val; dl.appendChild(opt);
+    });
+  });
+}
+function walkAll(n, fn){ fn(n); (n.children||[]).forEach(function(c){ walkAll(c,fn); }); (n._children||[]).forEach(function(c){ walkAll(c,fn); }); }
+function findNodeById(id){ var out=null; walkAll(root, function(n){ if(!out && n.data.id===id) out=n; }); return out; }
+function openPathTo(n){ var p=n; while(p){ if(p._children){ p.children=p._children; p._children=null; } p=p.parent; } }
+function centerOnNode(d){
+  var chartBox = document.getElementById('chart').getBoundingClientRect();
+  var Wc=chartBox.width, Hc=chartBox.height;
+  var x=vx(d), y=vy(d);
+  var scale = Math.min(1.5, Math.max(0.7, Math.min(Wc/(nodeCfg.w*2.2), Hc/(nodeCfg.h*2.2))));
+  var tx=(Wc/2)-x*scale, ty=(Hc/2)-y*scale;
+  svg.transition().duration(450).call(zoom.transform, d3.zoomIdentity.translate(tx,ty).scale(scale));
+}
+function applySearchDim(){
+  var q=(lastSearchQuery||'').trim().toLowerCase();
+  var allNodes=g.selectAll('g.node');
+  var allLinks=g.selectAll('path.link');
+  if(!q){ allNodes.classed('dimmed',false); allLinks.classed('dimmed',false); return; }
+  allNodes.each(function(d){
+    var t=(String(d.data.name||'')+' '+String(d.data.title||'')+' '+String(d.data.department||'')).toLowerCase();
+    var match=t.indexOf(q)!==-1;
+    d3.select(this).classed('dimmed', !match);
+  });
+  allLinks.classed('dimmed', true);
+}
+
+var searchInput = document.getElementById('search');
+searchInput.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); triggerSearch(true); } });
+searchInput.addEventListener('input', function(){ triggerSearch(false); });
+document.getElementById('btnClear').addEventListener('click', function(){ searchInput.value=''; lastSearchQuery=''; update(); });
+
+function triggerSearch(forceCenter){
+  var q = searchInput.value.trim().toLowerCase();
+  lastSearchQuery = q;
+  if(!q){ update(); return; }
+
+  var hits = ALL.filter(function(r){
+    var t=(String(r.name||'')+' '+String(r.title||'')+' '+String(r.department||'')).toLowerCase();
+    return t.indexOf(q)!==-1;
+  }).map(function(r){ return String(r.id); });
+
+  hits.forEach(function(id){ var n=findNodeById(id); if(n) openPathTo(n); });
+  update();
+
+  var focused=null, i;
+  for(i=0; i<hits.length; i++){ var n=findNodeById(hits[i]); if(n){ focused=n; break; } }
+  if(focused) centerOnNode(focused);
+  applySearchDim();
+}
+
+/* ================== Controls ================== */
+document.getElementById('btnFit').addEventListener('click', fitToScreen);
+document.getElementById('btnResetZoom').addEventListener('click', function(){ svg.transition().duration(250).call(zoom.transform, d3.zoomIdentity); });
+document.getElementById('btnFullscreen').addEventListener('click', function(){
+  var el=document.getElementById('chart'); try{ if(document.fullscreenEnabled && el.requestFullscreen) el.requestFullscreen(); }catch(e){}
+});
+
+/* ===== Collapse / Expand All (toggle) ===== */
+var allCollapsed = false;
+function collapseToCEOLevel(){
+  // depth: VROOT=0, CEO=1 → păstrăm doar nivelul 1 deschis (CEO + BU)
+  root.each(function(d){
+    if(d.depth >= 2 && d.children){ d._children=d.children; d.children=null; }
+    if(d.depth < 2 && d._children){ d.children=d._children; d._children=null; }
+  });
+  update(); fitToScreen();
+}
+function expandAll(){
+  root.each(function(d){
+    if(d._children){ d.children=d._children; d._children=null; }
+  });
+  update(); fitToScreen();
+}
+document.getElementById('btnToggleAll').addEventListener('click', function(){
+  if(!allCollapsed){ collapseToCEOLevel(); this.textContent='Expand All'; allCollapsed=true; }
+  else{ expandAll(); this.textContent='Collapse All'; allCollapsed=false; }
+});
+
+/* ================== Export (current viewport) ================== */
+function inlineStylesForExport(svgNode){
+  var cssAll=[];
+  Array.from(document.styleSheets).forEach(function(ss){
+    try{ Array.from(ss.cssRules).forEach(function(r){ cssAll.push(r.cssText); }); }catch(e){}
+  });
+  var defsEl=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  var styleEl=document.createElementNS('http://www.w3.org/2000/svg','style');
+  styleEl.setAttribute('type','text/css'); styleEl.innerHTML='<![CDATA['+cssAll.join('\n')+']]>';
+  defsEl.appendChild(styleEl); svgNode.insertBefore(defsEl, svgNode.firstChild);
+}
+function addSvgNamespaces(node){ node.setAttribute('xmlns','http://www.w3.org/2000/svg'); node.setAttribute('xmlns:xlink','http://www.w3.org/1999/xlink'); }
+function download(filename, blob){ var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000); }
+function cssVar(name, fallback){ try{ var v=getComputedStyle(document.documentElement).getPropertyValue(name).trim(); return v||fallback; }catch(e){ return fallback; } }
+
+function cloneForCurrentView(){
+  var tr = d3.zoomTransform(svg.node());
+  var chartBox=document.getElementById('chart').getBoundingClientRect();
+  var x0=tr.invertX(0), y0=tr.invertY(0);
+  var x1=tr.invertX(chartBox.width), y1=tr.invertY(chartBox.height);
+  var w=x1-x0, h=y1-y0;
+  var clone=svg.node().cloneNode(true);
+  addSvgNamespaces(clone);
+  inlineStylesForExport(clone);
+  var gClone=clone.querySelector('g');
+  if(gClone) gClone.setAttribute('transform',''); // remove current zoom transform
+  clone.setAttribute('viewBox', [x0,y0,w,h].join(' '));
+  return { clone: clone, widthCss:Math.round(chartBox.width), heightCss:Math.round(chartBox.height) };
+}
+function exportCurrentView(fmt){
+  try{
+    var tmp=cloneForCurrentView();
+    var xml=new XMLSerializer().serializeToString(tmp.clone);
+    var img=new Image();
+    var svg64='data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(xml)));
+    var dpr=window.devicePixelRatio||1;
+    img.onload=function(){
+      var canvas=document.createElement('canvas');
+      canvas.width=Math.max(1, Math.round(tmp.widthCss*dpr));
+      canvas.height=Math.max(1, Math.round(tmp.heightCss*dpr));
+      var ctx=canvas.getContext('2d');
+      ctx.scale(dpr,dpr);
+      ctx.fillStyle=cssVar('--export-bg','#ffffff'); ctx.fillRect(0,0,tmp.widthCss,tmp.heightCss);
+      ctx.drawImage(img,0,0,tmp.widthCss,tmp.heightCss);
+      if(fmt==='pdf'){
+        var dataURL=canvas.toDataURL('image/png');
+        var pdf=new window.jspdf.jsPDF({ orientation:'landscape', unit:'pt', format:'a4' });
+        var pw=pdf.internal.pageSize.getWidth(), ph=pdf.internal.pageSize.getHeight();
+        var scale=Math.min(pw/tmp.widthCss, ph/tmp.heightCss);
+        var w=tmp.widthCss*scale, h=tmp.heightCss*scale, x=(pw-w)/2, y=(ph-h)/2;
+        pdf.addImage(dataURL,'PNG',x,y,w,h); pdf.save('orgchart.pdf');
+      }else{
+        canvas.toBlob(function(blob){ if(blob) download('orgchart.png', blob); else alert('Export PNG a eșuat.'); });
+      }
+    };
+    img.onerror=function(){ alert('Nu pot exporta – imaginile trebuie servite same-origin.'); };
+    img.src=svg64;
+  }catch(err){ alert('Export a eșuat: '+(err&&err.message||'necunoscut')); }
+}
+document.getElementById('btnExport').addEventListener('click', function(){
+  var choice=(window.prompt('Format export: png sau pdf','png')||'png').toLowerCase();
+  exportCurrentView(choice.indexOf('pdf')!==-1 ? 'pdf' : 'png');
+});
+
+/* ================== State (link/restore) ================== */
+function serializeState(){
+  var tr=d3.zoomTransform(svg.node());
+  var collapsed=[]; root.each(function(d){ if(d._children && d._children.length) collapsed.push(d.data.id); });
+  return { collapsed: collapsed, search:lastSearchQuery||'', filters:{ colorizeTeams:true }, zoom:{ x:tr.x, y:tr.y, k:tr.k } };
+}
+function encodeState(obj){ return btoa(unescape(encodeURIComponent(JSON.stringify(obj)))); }
+function decodeState(str){ return JSON.parse(decodeURIComponent(escape(atob(str)))); }
+function applyState(st){
+  if(st && st.collapsed && st.collapsed.length){
+    root.each(function(d){ if(d.children && st.collapsed.indexOf(d.data.id)!==-1){ d._children=d.children; d.children=null; } });
+  }
+  lastSearchQuery = (st && st.search) ? String(st.search) : '';
+  update();
+  if(st && st.zoom){ svg.call(zoom.transform, d3.zoomIdentity.translate(st.zoom.x, st.zoom.y).scale(st.zoom.k)); }
+  applySearchDim();
+  document.getElementById('search').value = lastSearchQuery;
+}
+
+/* ================== Tooltip ================== */
+function showTooltip(ev,d){
+  if(!tooltipEl) return;
+  var lines=[];
+  lines.push('<strong>'+ (d.data.name||'') +'</strong>');
+  if(d.data.id==='BU_ADMIN'){ lines.push('Business Units – Administrative'); }
+  else if(d.data.id==='BU_PROD'){ lines.push('Business Units – Productive'); }
+  else if(d.data.title){ lines.push(d.data.title); }
+
+  if(d.data.id!=='BU_ADMIN' && d.data.id!=='BU_PROD'){
+    var contacts = [];
+    if(d.data.location) contacts.push(d.data.location);
+    if(d.data.email) contacts.push(d.data.email);
+    if(d.data.phone) contacts.push(d.data.phone);
+    if(contacts.length) lines.push(contacts.join(' • '));
+  }
+
+  var rep = REPORTS[d.data.id];
+  if(d.data.id==='BU_ADMIN' || d.data.id==='BU_PROD'){
+    var totalBU = LANE_TOTALS[d.data.id] || 0;
+    lines.push('Total în unitate: ' + totalBU);
+  }else if(rep){
+    var ceoId = (TRG && TRG.b) ? String(TRG.b.id) : null;
+    if(String(d.data.id)===ceoId){
+      lines.push('raporti total: ' + (rep.total || 0));
+    }else if((rep.total||0)>0){
+      if(rep.direct===rep.total) lines.push('raporti direct: ' + rep.direct);
+      else lines.push('raporti direct: ' + rep.direct + ' • ' + 'raporti total: ' + rep.total);
+    }
+  }
+
+  tooltipEl.innerHTML = lines.join('<br>');
+  tooltipEl.style.opacity = 1;
+  tooltipEl.style.left = (ev.pageX + 12) + 'px';
+  tooltipEl.style.top  = (ev.pageY + 12) + 'px';
+}
+function hideTooltip(){ if(tooltipEl){ tooltipEl.style.opacity=0; } }
+
+/* ================== Expand helpers ================== */
+function expandToLevel(n){
+  root.each(function(d){
+    if(d.depth < n && d._children){ d.children=d._children; d._children=null; }
+    if(d.depth >= n && d.children){ d._children=d.children; d.children=null; }
+  });
+  update();
+}
+</script>
+</body>
+</html>
