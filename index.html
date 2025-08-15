@@ -137,7 +137,7 @@
 'use strict';
 
 /* ================== DATA (inline fallback) ================== */
-/* RAW rămâne fallback; aplicația încarcă implicit data/orgchart.tsv */
+/* RAW rămâne doar fallback – TSV extern se încarcă din data/orgchart.tsv pe HTTP/HTTPS */
 var RAW = `id\tparentId\tname\ttitle\tdepartment\tlocation\tphoto\tboardVertex\tboardAttach\tbusinessLine\tbuOrder\temail\tphone\tnodeType\tlayer\torder
 1000\t\tMatei Ladea\tActionar\tActionariat\tBucuresti\tassets/9999-left.jpg\ttop-left\t\t\t\tmatei@omnia.capital\t0721596298\t\t\t
 1001\t\tBogdan Georgescu\tActionar\tActionariat\tBucuresti\tassets/9999-right.jpg\ttop-right\t\t\t\tbogdan@omnia.capital\t0722556365\t\t\t
@@ -152,13 +152,13 @@ var RAW = `id\tparentId\tname\ttitle\tdepartment\tlocation\tphoto\tboardVertex\t
 9\t1\tSorin Sofian\tBUM Domestic\t\t\tassets/9.jpg\t\t\tProductive\t\tsorin.sofian@dumagas.com\t0729209280\t\t\t
 10\t1\tRadu Sirbu\tBUM GMBH Germania\t\t\tassets/10.jpg\t\t\tProductive\t\tradu.sirbu@dumagas.com\t\t\t\t
 11\t1\tMihaela Gana\tManager Subcontractori\t\t\t\t\t\tProductive\t\tmihaela.gana@dumagas.com\t0729209280\t\t\t
-L1_2A\t2\tJURIDIC\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t1
-L1_2B\t2\tIT\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t2
+L1_2A\t2\tJURIDIC\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1
+L1_2B\t2\tIT\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t2
 L2_2B1\tL1_2B\tGolea Laurentiu\tExternal IT Software\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
 L2_2B2\tL1_2B\tClaudiu Radulescu\tAsistent IT Hardware\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
 L1_2A1\tL1_2A\tVoica Catalin\tJurist\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
-L1_3A\t3\tADMINISTRATIV\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t1
-L1_3B\t3\tFINANCIAR CONTABIL\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t2
+L1_3A\t3\tADMINISTRATIV\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1
+L1_3B\t3\tFINANCIAR CONTABIL\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t2
 L1_3A1\tL1_3A\tRadu Silvia\tServicii Curatenie\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
 L1_3A2\tL1_3A\tMaruntelu Camelia-Paula\tBucatareasa\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
 L1_3A3\tL1_3A\tBegu Marian\tInginer Electroenergetic\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
@@ -167,26 +167,26 @@ L1_3B2\tL1_3B\tSirbi Ileana\tOperator Facturare\t\t\t\t\t\tAdministrative\t\t\t\
 L1_3B3\tL1_3B\tVlaescu Liliana-Nicoleta\tOperator Facturare\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
 L1_3B4\tL1_3B\tVelica Aurelia\tEconomist\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
 L1_3B5\tL1_3B\tLavinia Bogdan\tEconomist\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
-L1_4A\t4\tHR, PEOPLE & CULTURE\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t1
-L1_5A\t5\tSERVICE\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1\t1
+L1_4A\t4\tHR, PEOPLE & CULTURE\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1
+L1_5A\t5\tSERVICE\t\t\t\t\t\tAdministrative\t\t\t\t\tlayer\t1
 L1_5A1\tL1_5A\tNovac Cristi\tTeam Lead\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
 L1_5A1b\tL1_5A1\tBunaiasu Constantin\tMecanic\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
 L1_5A1c\tL1_5A1\tMarinescu Nicolae-Madalin\tMecanic\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
 L1_5A1d\tL1_5A1\tMaruntelu Marian\tMecanic\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
 L1_5A1e\tL1_5A1\tMititelu Gheorghe\tMecanic\t\t\t\t\t\tAdministrative\t\t\t\t\t\t
-L1_6A\t6\tDEPOZIT & LOGISTICA\t(Layer 1)\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_6A\t6\tDEPOZIT & LOGISTICA\t(Layer 1)\t\t\t\t\tProductive\t\t\t\t\tlayer\t1
 L1_6A1\tL1_6A\tBaran Cezar\tManager Depozit\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_6A1a\tL1_6A1\tAndrut Cristian\tManipulant\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_6A1b\tL1_6A1\tRaicovici Cristian\tStivuitorist\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_6A1c\tL1_6A1\tDracea Adrian\tManipulant\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_6A1d\tL1_6A1\tDinut Gheorghe\tPicker\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_6A1e\tL1_6A1\tZiane Ayoub\tManipulant\t\t\t\t\t\tProductive\t\t\t\t\t\t
-L1_7A\t7\tTRANSPORT SPECIALIZAT Auto-Transportoare, High & Heavy, Air Liquide\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_7A\t7\tTRANSPORT SPECIALIZAT Auto-Transportoare, High & Heavy, Air Liquide\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1
 L1_7A1\tL1_7A\tManescu Alina\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_7A2\tL1_7A\tChilom Victor\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_7A3\tL1_7A\tCombei Ovidiu\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_7A4\tL1_7A\tFloricel Adrian\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
-L1_8A\t8\tINTERNATIONAL & ITALIA\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_8A\t8\tINTERNATIONAL & ITALIA\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1
 L1_8A1\tL1_8A\tAndrei Delibasa\tTeam Lead Traffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_8A1a\tL1_8A1\tCatalina Avram\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_8A1b\tL1_8A1\tDaniela Iordache\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
@@ -197,7 +197,7 @@ L1_8A2a\tL1_8A2\tEleonora Pita\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\
 L1_8A2b\tL1_8A2\tDanut Preda\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_8A2c\tL1_8A2\tAdrian Dina\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_8A2d\tL1_8A2\tEugen Calusaru\tDrivers Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
-L1_9A\t9\tDOMESTIC ROMANIA\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_9A\t9\tDOMESTIC ROMANIA\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1
 L1_9A1\tL1_9A\tVasilescu Cristina\tTraffic Manager\t\tTurda\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_9A2\tL1_9A\tBerdut Alin\tTeam Lead Transport Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_9A2a\tL1_9A2\tBaluta Viorica\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
@@ -207,8 +207,8 @@ L1_9A2d\tL1_9A2\tCiurca Gabriel\tTransport Manager\t\t\t\t\t\tProductive\t\t\t\t
 L1_9A2e\tL1_9A2\tDelica Alina\tTraffic Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_9A1a\tL1_9A1\tMocan Alexandra\tTransport Manager\t\tTurda\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_9A1b\tL1_9A1\tPasc Madalina\tTransport Manager\t\tTurda\t\t\t\t\tProductive\t\t\t\t\t\t
-L1_11A\t11\tFLOTA SUBCONTRACTORI\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
-L1_10A\t10\tDOMESTIC GERMANIA\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1\t1
+L1_11A\t11\tFLOTA SUBCONTRACTORI\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1
+L1_10A\t10\tDOMESTIC GERMANIA\t\t\t\t\t\tProductive\t\t\t\t\tlayer\t1
 L1_10A1\tL1_10A\tLaura Puica\tTransport Manager cu Rol Administrativ\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_10A2\tL1_10A\tLavinel Cruceru\tTransport Manager cu Rol Tehnic\t\t\t\t\t\tProductive\t\t\t\t\t\t
 L1_10A3\tL1_10A\tEugen Calusaru\tDriver's Manager\t\t\t\t\t\tProductive\t\t\t\t\t\t
@@ -236,7 +236,9 @@ function parseData(txt){
   var dsv = d3.dsvFormat(detectDelimiter(txt));
   var rows = dsv.parse(txt.trim());
   return rows.map(function(r){
-    var nt = String(r.nodeType || '').trim().toLowerCase();
+    var layerFlag = String(r.layer || '').trim().toLowerCase();
+    var nodeType  = String(r.nodeType || '').trim().toLowerCase();
+    var isLayer   = (layerFlag==='layer') || (nodeType==='layer');
     return {
       id: String(r.id || '').trim(),
       parentId: String(r.parentId || '').trim(),
@@ -251,9 +253,10 @@ function parseData(txt){
       buOrder: String(r.buOrder || '').trim() === '' ? null : +r.buOrder,
       email: String(r.email || '').trim(),
       phone: String(r.phone || '').trim(),
-      nodeType: nt || '', // '', 'layer', 'lead'
-      layer: String(r.layer || '').trim()==='' ? null : +r.layer,
-      order: String(r.order || '').trim()==='' ? null : +r.order
+      nodeType: nodeType,
+      layer: layerFlag,         // păstrăm textul original (ex: "layer")
+      isLayer: isLayer,
+      order: (String(r.order||'').trim()===''? null : +r.order)
     };
   }).filter(function(d){ return d.id; });
 }
@@ -266,6 +269,7 @@ var ORG = [];
 var withRoot = [];
 var root = null;
 var REPORTS = {};
+var LAYER_TOTALS_MAP = {};
 var LANE_TOTALS = { BU_ADMIN: 0, BU_PROD: 0 };
 var lastSearchQuery = '';
 var TEAM_COLOR = {};
@@ -285,21 +289,94 @@ var g = svg.append('g');
 
 var tooltipEl = document.getElementById('tooltip');
 
-/* airy spacing */
-var nodeCfg = { w: 260, h: 84, gapX: 72, gapY: 108 };
+/* airy spacing – mărit pentru 6 rânduri de text */
+var nodeCfg = { w: 260, h: 140, gapX: 72, gapY: 130 };
 var tree = d3.tree().nodeSize([nodeCfg.w + nodeCfg.gapX, nodeCfg.h + nodeCfg.gapY]).separation(function(a,b){ return a.parent===b.parent ? 1 : 1.2; });
 
 var zoom = d3.zoom().scaleExtent([0.3, 2.6]).on('zoom', function(ev){ g.attr('transform', ev.transform); });
 svg.call(zoom);
 
-/* ================== External loader w/ fallback ================== */
-var DATA_URL = 'data/orgchart.tsv';
-(function init(){
-  fetch(DATA_URL + '?v=' + Date.now(), { cache: 'no-store' })
-    .then(function(resp){ if(!resp.ok) throw new Error('HTTP ' + resp.status); return resp.text(); })
-    .then(function(txt){ rebuildAll(parseData(txt)); boot(); })
-    .catch(function(){ rebuildAll(parseData(RAW)); boot(); });
-})();
+/* ================== External loader (HTTP) + file:// fallback ================== */
+const DATA_URL = 'data/orgchart.tsv';
+
+function buildLocalOverlay(onPick) {
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `
+    position:fixed; inset:12px; z-index:99999; display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,0.92); border:1px solid #e5e7eb; border-radius:14px;
+    box-shadow:0 10px 24px rgba(16,24,40,.12); font:14px/1.4 Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial; color:#101828;
+  `;
+  wrap.innerHTML = `
+    <div style="max-width:560px; text-align:center; padding:18px 22px;">
+      <div style="font-weight:700; font-size:16px; margin-bottom:6px;">Încarcă orgchart.tsv</div>
+      <div style="color:#475467; margin-bottom:14px;">
+        Rulezi pagina prin <code>file://</code>. Browserul blochează <code>fetch()</code> către fișiere locale.<br>
+        <b>Variantă rapidă:</b> trage aici fișierul <code>data/orgchart.tsv</code> sau apasă butonul de mai jos.
+      </div>
+      <div style="display:flex; gap:10px; justify-content:center; margin-top:6px;">
+        <button id="pickTsv" style="border:1px solid #e5e7eb; background:#fff; color:#101828; border-radius:12px; padding:8px 12px; cursor:pointer;">Selectează TSV...</button>
+        <button id="dismiss" style="border:1px solid #e5e7eb; background:#f9fafb; color:#101828; border-radius:12px; padding:8px 12px; cursor:pointer;">Folosește fallback (RAW)</button>
+      </div>
+    </div>
+  `;
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.tsv,.csv,text/tab-separated-values';
+  input.style.display = 'none';
+  input.addEventListener('change', () => {
+    const f = input.files && input.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = e => onPick(String(e.target.result||''), wrap);
+    reader.readAsText(f);
+  });
+  wrap.querySelector('#pickTsv').addEventListener('click', () => input.click());
+  wrap.querySelector('#dismiss').addEventListener('click', () => onPick(null, wrap));
+  function prevent(e){ e.preventDefault(); e.stopPropagation(); }
+  ['dragenter','dragover','dragleave','drop'].forEach(ev => wrap.addEventListener(ev, prevent));
+  wrap.addEventListener('drop', (e)=>{
+    const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if(!f) return;
+    const reader = new FileReader();
+    reader.onload = ev => onPick(String(ev.target.result||''), wrap);
+    reader.readAsText(f);
+  });
+  document.body.appendChild(wrap);
+}
+
+async function init(){
+  if (location.protocol === 'http:' || location.protocol === 'https:') {
+    try{
+      const resp = await fetch(DATA_URL + '?v=' + Date.now(), { cache: 'no-store' });
+      if(!resp.ok) throw new Error('HTTP ' + resp.status);
+      const txt = await resp.text();
+      rebuildAll(parseData(txt));
+      boot();
+      return;
+    }catch(e){
+      console.warn('[orgchart] HTTP fetch a eșuat, folosesc RAW. Motiv:', e);
+      rebuildAll(parseData(RAW));
+      boot();
+      return;
+    }
+  }
+  // file:// — UI de încărcare locală
+  buildLocalOverlay((maybeText, overlayEl)=>{
+    if (overlayEl && overlayEl.parentNode) overlayEl.parentNode.removeChild(overlayEl);
+    if (typeof maybeText === 'string') {
+      try { rebuildAll(parseData(maybeText)); }
+      catch(e){
+        console.warn('[orgchart] Parsare TSV local a eșuat, folosesc RAW. Motiv:', e);
+        rebuildAll(parseData(RAW));
+      }
+      boot();
+    } else {
+      rebuildAll(parseData(RAW));
+      boot();
+    }
+  });
+}
+
 function boot(){
   if(location.hash && location.hash.length>1){
     try{ var st = decodeState(location.hash.slice(1)); applyState(st); STATE_APPLIED = true; }catch(e){}
@@ -311,13 +388,11 @@ function boot(){
   }
 }
 
-/* ================== Helpers for types ================== */
-function isShareholder(d){ return /actionar/i.test(d.title) || /actionariat/i.test(d.department); }
-function isCEO(d){ return /chief\s+executive\s+officer/i.test(d.title); }
-function isLayer(d){ return d && d.nodeType === 'layer'; }
-function isSpacer(d){ return d && d.isSpacer; }
+init();
 
 /* ================== Build graph ================== */
+function isShareholder(d){ return /actionar/i.test(d.title) || /actionariat/i.test(d.department); }
+function isCEO(d){ return /chief\s+executive\s+officer/i.test(d.title); }
 function getTriangleMembers(rows){
   var tl = rows.find(function(d){ return d.boardVertex==='top-left'; }) || rows.filter(isShareholder)[0];
   var tr = rows.find(function(d){ return d.boardVertex==='top-right'; }) || rows.filter(isShareholder)[1];
@@ -330,7 +405,7 @@ function rebuildAll(rows){
   TRG = getTriangleMembers(ALL);
   dottedTargets = ALL.filter(function(d){ return d.boardAttach && d.boardAttach.length; });
 
-  // exclude shareholders (triangle-only)
+  // exclude actionarii (triangle-only)
   var ORG_BASE = ALL.filter(function(d){ var v=(d.boardVertex||'').toLowerCase(); return v!=='top-left' && v!=='top-right'; })
                     .map(function(d){ return Object.assign({}, d); });
 
@@ -341,7 +416,7 @@ function rebuildAll(rows){
   ORG = ORG_BASE.map(function(d){ return Object.assign({}, d); });
 
   if(CEO_ID){
-    // redirect CEO direct reports into BUs
+    // redirect CEO direct reports în BUs (după businessLine)
     ORG.forEach(function(d){
       if(String(d.id)===CEO_ID) return;
       if(String(d.parentId||'')===CEO_ID){
@@ -350,16 +425,15 @@ function rebuildAll(rows){
         else if(desired==='productive') d.parentId = BU_PROD.id;
       }
     });
-    // force Emil (id=2) under Administrative
+    // forțăm pe Emil (id=2) sub Administrative
     var emil = ORG.find(function(d){ return String(d.id)==='2'; }); if(emil) emil.parentId = BU_ADMIN.id;
   }
   if(CEO_ID){ ORG.push(BU_ADMIN, BU_PROD); }
 
-  /* ✂️ Eliminat keepout de sub Ștefania (SPACER_STEF_*) */
+  // (dacă aveai spacere pentru Stefania, le putem elimina acum — layerele rezolvă overflow-ul)
+  // -- eliminat SPACER_STEF --
 
-  withRoot = [{ id:VROOT, parentId:'', name:'', title:'' }].concat(
-    ORG.map(function(d){ var c=Object.assign({},d); c.parentId = c.parentId || VROOT; return c; })
-  );
+  withRoot = [{ id:VROOT, parentId:'', name:'', title:'' }].concat( ORG.map(function(d){ var c=Object.assign({},d); c.parentId = c.parentId || VROOT; return c; }) );
 
   var stratify = d3.stratify().id(function(d){ return d.id; }).parentId(function(d){ return d.parentId || null; });
   root = stratify(withRoot);
@@ -372,98 +446,86 @@ function rebuildAll(rows){
   buildSuggestions();
 }
 
-/* ================== Sort (order > buOrder > title > name) ================== */
 function siblingSort(a,b){
-  var ao = a.data.order==null ? Infinity : a.data.order;
-  var bo = b.data.order==null ? Infinity : b.data.order;
+  var ao = a.data.buOrder==null ? Infinity : a.data.buOrder;
+  var bo = b.data.buOrder==null ? Infinity : b.data.buOrder;
   if(ao!==bo) return ao-bo;
-
-  var aBu = a.data.buOrder==null ? Infinity : a.data.buOrder;
-  var bBu = b.data.buOrder==null ? Infinity : b.data.buOrder;
-  if(aBu!==bBu) return aBu-bBu;
-
   var at = (a.data.title||'').localeCompare(b.data.title||''); if(at!==0) return at;
   return (a.data.name||'').localeCompare(b.data.name||'');
 }
 
 /* ================== Reporting ================== */
+function isSpecialId(id){ return id===VROOT || id==='BU_ADMIN' || id==='BU_PROD'; }
 function computeReportCounts(){
   var stratify = d3.stratify().id(function(d){ return d.id; }).parentId(function(d){ return d.parentId || null; });
   var fullRoot = stratify(withRoot);
-  var nodes = fullRoot.descendants();
+  var nodesAll = fullRoot.descendants();
 
-  var byId = {};
-  nodes.forEach(function(n){ byId[n.data.id]=n; });
+  function isLayerNode(n){ return !!(n && n.data && n.data.isLayer); }
+  function isSpacer(n){ return !!(n && n.data && n.data.isSpacer); }
 
-  var rawChildren = {};
-  nodes.forEach(function(n){ rawChildren[n.data.id]=[]; });
-  nodes.forEach(function(n){
-    if(!n.parent) return;
-    var pid = n.parent.data.id;
-    if(pid==='BU_ADMIN' || pid==='BU_PROD'){
-      var ceoId = (TRG && TRG.b && TRG.b.id) ? String(TRG.b.id) : null;
-      pid = ceoId || pid;
-    }
-    if(!rawChildren[pid]) rawChildren[pid]=[];
-    rawChildren[pid].push(n.data.id);
+  // Construim arborele „efectiv” (ignorând layerele, BU-urile și VROOT)
+  var peopleNodes = nodesAll.filter(function(n){
+    return n.data && !isSpecialId(n.data.id) && !isSpacer(n) && !isLayerNode(n);
   });
 
-  function isCountable(id){
-    var d = byId[id] && byId[id].data;
-    if(!d) return false;
-    if(d.id===VROOT) return false;
-    if(d.id==='BU_ADMIN' || d.id==='BU_PROD') return false;
-    if(d.isSpacer) return false;
-    if(d.nodeType === 'layer') return false;
-    return true;
+  var childrenMap = {};
+  peopleNodes.forEach(function(n){ childrenMap[n.data.id] = childrenMap[n.data.id] || []; });
+
+  function effectiveParentId(n){
+    var p = n.parent;
+    while (p && (isSpecialId(p.data.id) || isSpacer(p) || isLayerNode(p))) { p = p.parent; }
+    return p ? p.data.id : null;
   }
 
-  function countNonLayerDesc(id){
+  peopleNodes.forEach(function(n){
+    var pid = effectiveParentId(n);
+    if(pid){
+      if(!childrenMap[pid]) childrenMap[pid] = [];
+      childrenMap[pid].push(n.data.id);
+    }
+  });
+
+  var memo = {};
+  function countDesc(id){
+    if(memo[id]!=null) return memo[id];
+    var kids = childrenMap[id] || [];
     var total = 0;
-    var stack = (rawChildren[id] || []).slice();
-    while(stack.length){
-      var x = stack.pop();
-      var dx = byId[x] && byId[x].data;
-      if(!dx) continue;
-      if(dx.nodeType === 'layer' || dx.isSpacer || dx.id==='BU_ADMIN' || dx.id==='BU_PROD' || dx.id===VROOT){
-        (rawChildren[x]||[]).forEach(function(c){ stack.push(c); });
-        continue;
-      }
-      total += 1;
-      (rawChildren[x]||[]).forEach(function(c){ stack.push(c); });
-    }
-    return total;
-  }
-
-  function firstNonLayerChildren(id){
-    var result = new Set();
-    var queue = (rawChildren[id] || []).map(function(cid){ return { id: cid, depth: 1 }; });
-
-    while(queue.length){
-      var cur = queue.shift();
-      var d = byId[cur.id] && byId[cur.id].data;
-      if(!d) continue;
-
-      if(d.nodeType === 'layer' || d.isSpacer){
-        (rawChildren[cur.id]||[]).forEach(function(k){ queue.push({ id:k, depth: cur.depth+1 }); });
-      }else if(d.id!=='BU_ADMIN' && d.id!=='BU_PROD' && d.id!==VROOT){
-        result.add(cur.id);
-      }
-    }
-    return Array.from(result);
+    for(var i=0;i<kids.length;i++) total += 1 + countDesc(kids[i]);
+    memo[id] = total; return total;
   }
 
   REPORTS = {};
-  nodes.forEach(function(n){
+  peopleNodes.forEach(function(n){
     var id = n.data.id;
-    if(id===VROOT) return;
-    var direct = firstNonLayerChildren(id).filter(isCountable).length;
-    var total  = countNonLayerDesc(id);
+    var direct = (childrenMap[id]||[]).length;
+    var total = countDesc(id);
     REPORTS[id] = { direct: direct, total: total };
+  });
+
+  // Totaluri pentru LAYERE (numărăm descendenți non-layer)
+  LAYER_TOTALS_MAP = {};
+  function countNonLayerDescFrom(node){
+    var cnt=0;
+    var kids=(node.children||[]).concat(node._children||[]);
+    kids.forEach(function(c){
+      if(!c.data || isSpecialId(c.data.id) || isSpacer(c)) return;
+      if(c.data.isLayer){
+        cnt += countNonLayerDescFrom(c);
+      }else{
+        cnt += 1 + countNonLayerDescFrom(c);
+      }
+    });
+    return cnt;
+  }
+  nodesAll.forEach(function(n){
+    if(isLayerNode(n)){
+      LAYER_TOTALS_MAP[n.data.id] = countNonLayerDescFrom(n);
+    }
   });
 }
 
-/* ================== BU totals (exclude 'layer') ================== */
+/* ================== BU totals (excludem layerele) ================== */
 function computeLaneTotals(){
   var stratify = d3.stratify().id(function(d){ return d.id; }).parentId(function(d){ return d.parentId || null; });
   var fullRoot = stratify(withRoot);
@@ -474,12 +536,12 @@ function computeLaneTotals(){
   function countUnder(anchor){
     if(!anchor) return 0;
     return all.filter(function(n){
-      var d=n.data;
       if(n===anchor) return false;
       if(!isDesc(n,anchor)) return false;
-      if(d.isSpacer) return false;
-      if(d.nodeType === 'layer') return false;
-      if(d.id==='BU_ADMIN' || d.id==='BU_PROD' || d.id===VROOT) return false;
+      if(!n.data) return false;
+      if(n.data.isSpacer) return false;
+      if(n.data.isLayer) return false;
+      if(isSpecialId(n.data.id)) return false;
       return true;
     }).length;
   }
@@ -493,17 +555,16 @@ function computeTeamPalette(){
   TEAM_COLOR = {};
   function walkAll(n, fn){ fn(n); (n.children||[]).forEach(function(c){ walkAll(c,fn); }); (n._children||[]).forEach(function(c){ walkAll(c,fn); }); }
   var heads = [];
-  walkAll(root, function(n){ if(n.parent && (n.parent.data.id==='BU_ADMIN' || n.parent.data.id==='BU_PROD')) heads.push(n); });
+  walkAll(root, function(n){
+    if(n.parent && (n.parent.data.id==='BU_ADMIN' || n.parent.data.id==='BU_PROD') && !n.data.isLayer) heads.push(n);
+  });
   heads.sort(function(a,b){
     var la = (a.parent && a.parent.data.id)==='BU_ADMIN' ? 0 : 1;
     var lb = (b.parent && b.parent.data.id)==='BU_ADMIN' ? 0 : 1;
     if(la!==lb) return la-lb;
-    var ao = a.data.order==null?Infinity:a.data.order;
-    var bo = b.data.order==null?Infinity:b.data.order;
+    var ao = a.data.buOrder==null?Infinity:a.data.buOrder;
+    var bo = b.data.buOrder==null?Infinity:b.data.buOrder;
     if(ao!==bo) return ao-bo;
-    var aBu = a.data.buOrder==null?Infinity:a.data.buOrder;
-    var bBu = b.data.buOrder==null?Infinity:b.data.buOrder;
-    if(aBu!==bBu) return aBu-bBu;
     return (a.data.name||'').localeCompare(b.data.name||'');
   });
   heads.forEach(function(h,i){ TEAM_COLOR[h.data.id] = palette[i % palette.length]; });
@@ -525,7 +586,7 @@ function ensureTeamGradient(id, base){
 function ensureSoftCardGradient(){
   var gid = 'grad_card_soft';
   if(document.getElementById(gid)) return gid;
-  var gEl = defs.append('linearGradient').attr('id', gid).attr('x1','0').attr('y','0').attr('x2','1').attr('y2','1');
+  var gEl = defs.append('linearGradient').attr('id', gid).attr('x1','0').attr('y','0').attr('x2','1').attr('y','1');
   gEl.append('stop').attr('offset','0%').attr('stop-color','#f0f6ff').attr('stop-opacity', .35);
   gEl.append('stop').attr('offset','100%').attr('stop-color','#ffffff').attr('stop-opacity', 0);
   return gid;
@@ -533,9 +594,8 @@ function ensureSoftCardGradient(){
 
 /* ================== Lanes & positions ================== */
 function nodeLane(n){
-  var d = n && n.data || {};
-  if(d.lane) return d.lane;
-  if(d.businessLine) return d.businessLine;
+  if(n && n.data && n.data.lane) return n.data.lane;
+  if(n && n.data && n.data.businessLine) return n.data.businessLine;
   var cur=n? n.parent: null;
   while(cur){ if(cur.data && (cur.data.lane || cur.data.businessLine)) return (cur.data.lane || cur.data.businessLine); cur=cur.parent; }
   return '';
@@ -591,39 +651,29 @@ function buildCard(sel){
     var tx=(-W/2+12)+avD+10, ty=-H/2+16;
     gCard.append('text').attr('class','name').attr('x',tx).attr('y',ty+6);
     gCard.append('text').attr('class','title').attr('x',tx).attr('y',ty+26);
-    gCard.append('text').attr('class','meta').attr('x',tx).attr('y',ty+46);
-    gCard.append('text').attr('class','counts').attr('x',tx).attr('y',ty+62);
+    gCard.append('text').attr('class','meta meta-loc').attr('x',tx).attr('y',ty+44);
+    gCard.append('text').attr('class','meta meta-email').attr('x',tx).attr('y',ty+62);
+    gCard.append('text').attr('class','meta meta-phone').attr('x',tx).attr('y',ty+80);
+    gCard.append('text').attr('class','counts').attr('x',tx).attr('y',ty+98);
   });
 }
 
 /* ================== Layout update ================== */
-function hasOnlySpacerChildren(d){
-  return !!(d && d.children && d.children.length && d.children.every(function(c){ return !!c.data.isSpacer; }));
-}
 function collapseSubtree(n){
   if(!n) return;
   if(n.children && n.children.length){ n._children=n.children; n.children=null; }
   (n._children||[]).forEach(collapseSubtree);
 }
 function toggle(d){
-  if(hasOnlySpacerChildren(d)) return;
+  // dacă e doar spacer/layer cu copii „goi”, nu facem nimic special aici
   var opening = !!d._children;
   if(d.children){ d._children=d.children; d.children=null; }
   else{ d.children=d._children; d._children=null; }
 
-  // Open rules „one level at a time”
-  if(opening){
-    // BU -> arată doar managerii
-    if(d.data.id==='BU_ADMIN' || d.data.id==='BU_PROD'){
-      (d.children||[]).forEach(function(c){ collapseSubtree(c); });
-    }
-    // Manager (copil al BU) -> arată doar containerele L1
-    else if(d.parent && (d.parent.data.id==='BU_ADMIN' || d.parent.data.id==='BU_PROD')){
-      (d.children||[]).forEach(function(c){ collapseSubtree(c); });
-    }
-    // Layer -> arată doar copiii direcți
+  // Când deschidem BU: doar managerii direcți (layerele vor rămâne vizibile, dar echipele lor colapsate)
+  if(opening && (d.data.id==='BU_ADMIN' || d.data.id==='BU_PROD')){
+    (d.children||[]).forEach(function(c){ collapseSubtree(c); });
   }
-
   update();
 }
 
@@ -633,7 +683,7 @@ function elbow(l){
   return "M"+x1+","+y1+" V"+((y1+y2)/2)+" H"+x2+" V"+y2;
 }
 
-/* pentru atașări în 90° (ex. Emil din triunghi) */
+/* linie în 90° pentru atașarea din triunghi (ex. Emil) */
 function rightAngleAttach(xStart, yStart, xEnd, yEnd){
   return "M"+xStart+","+yStart+" H"+xEnd+" V"+yEnd;
 }
@@ -698,40 +748,48 @@ function update(){
 
   nodeSel.exit().transition().duration(200).style('opacity',0).remove();
 
-  // mark managers, set texts, fill/tint, resize where needed
+  // populate texts + stil
   var merged = g.selectAll('g.node');
-  merged.classed('manager', function(d){
-    return !!(d.children && d.children.length) || !!(d._children && d._children.length);
-  });
-
+  merged.classed('manager', function(d){ return !!(d.children && d.children.length) || !!(d._children && d._children.length); });
   merged.each(function(d){
     var sel = d3.select(this);
-    var nameSel  = sel.select('text.name');
-    var titleSel = sel.select('text.title');
-    var metaSel  = sel.select('text.meta');
-    var countsSel= sel.select('text.counts');
-    var tint     = sel.select('rect.tint');
-    var bgRect   = sel.select('rect.bg');
+    var nameSel   = sel.select('text.name');
+    var titleSel  = sel.select('text.title');
+    var locSel    = sel.select('text.meta-loc');
+    var emailSel  = sel.select('text.meta-email');
+    var phoneSel  = sel.select('text.meta-phone');
+    var countsSel = sel.select('text.counts');
+    var tint      = sel.select('rect.tint');
+    var bgRect    = sel.select('rect.bg');
 
     var avD=56;
     var baseInnerLeftPadding = avD + 22;
 
+    // BUs
     if(d.data.id==='BU_ADMIN'){
       nameSel.text('Administrative');
       titleSel.text('Business Units');
-      metaSel.text('');
+      locSel.text(''); emailSel.text(''); phoneSel.text('');
     }else if(d.data.id==='BU_PROD'){
       nameSel.text('Productive');
       titleSel.text('Business Units');
-      metaSel.text('');
-    }else{
+      locSel.text(''); emailSel.text(''); phoneSel.text('');
+    }
+    // Layere – DOAR „total în unitate”
+    else if(d.data.isLayer){
+      nameSel.text(d.data.name || '(layer)');
+      titleSel.text('');
+      locSel.text('');
+      emailSel.text('');
+      phoneSel.text('');
+    }
+    // Angajați normali – 6 rânduri
+    else{
       nameSel.text(d.data.name || '(fără nume)');
-      titleSel.text(d.data.title || (isLayer(d.data) ? '(Layer '+(d.data.layer||'')+')' : ''));
-      var contacts = [];
-      if(d.data.location) contacts.push(d.data.location);
-      if(d.data.email) contacts.push(d.data.email);
-      if(d.data.phone) contacts.push(d.data.phone);
-      metaSel.text(contacts.join(' • '));
+      titleSel.text(d.data.title || '');
+      locSel.text(d.data.location || '');
+      emailSel.text(d.data.email || '');
+      phoneSel.text(d.data.phone || '');
     }
 
     // lărgim cardul dacă textul nu încape
@@ -743,7 +801,7 @@ function update(){
       tint .attr('x', left).attr('width', needW);
     }
 
-    // counts (reguli noi)
+    // counts (NOI reguli)
     if(!countsSel.empty()) countsSel.text(getCountsText(d));
 
     // Role-based bg/stroke
@@ -758,7 +816,7 @@ function update(){
     }
     bgRect.style('fill', fillVar).style('stroke', strokeVar);
 
-    // team tint by manager (child of BU)
+    // team tint
     var head = teamHead(d);
     if(head && TEAM_COLOR[head.data.id]){
       var gid = ensureTeamGradient(head.data.id, TEAM_COLOR[head.data.id]);
@@ -773,17 +831,28 @@ function update(){
 
 /* ================== Counts rules ================== */
 function getCountsText(d){
+  // BU-urile
   if (d.data.id === 'BU_ADMIN' || d.data.id === 'BU_PROD') {
     var n = LANE_TOTALS[d.data.id] || 0;
     return 'total în unitate: ' + n;
   }
+  // Layere – doar total în unitate (ignorăm layerele în numărătoare)
+  if (d.data.isLayer) {
+    var totalL = LAYER_TOTALS_MAP[d.data.id] || 0;
+    return 'total în unitate: ' + totalL;
+  }
+
   var rep = REPORTS[d.data.id];
   if (!rep) return '';
+
   var ceoId = (TRG && TRG.b) ? String(TRG.b.id) : null;
 
+  // CEO – doar total
   if (String(d.data.id) === ceoId) {
     return 'raporti total: ' + (rep.total || 0);
   }
+
+  // Restul – dacă direct == total, afișăm doar direct
   if ((rep.total || 0) <= 0) return '';
   if (rep.direct === rep.total) {
     return 'raporti direct: ' + rep.direct;
@@ -825,10 +894,15 @@ function drawStaticCard(sel, person, cx, cy){
   }
 
   var tx = (cx - W/2 + 12) + avD + 10, ty = cy - H/2 + 16;
-  gCard.append('text').attr('class','name').attr('x',tx).attr('y',ty+6).text(person.name||'');
-  gCard.append('text').attr('class','title').attr('x',tx).attr('y',ty+26).text(person.title||'');
-  var meta = [person.department, person.location].filter(Boolean).join(' • ');
-  gCard.append('text').attr('class','meta').attr('x',tx).attr('y',ty+46).text(meta);
+  var lineY = [ty+6, ty+26, ty+44, ty+62, ty+80];
+
+  gCard.append('text').attr('class','name').attr('x',tx).attr('y',lineY[0]).text(person.name||'');
+  gCard.append('text').attr('class','title').attr('x',tx).attr('y',lineY[1]).text(person.title||'');
+
+  // meta linii: locație, email, telefon
+  gCard.append('text').attr('class','meta').attr('x',tx).attr('y',lineY[2]).text(person.location || '');
+  gCard.append('text').attr('class','meta').attr('x',tx).attr('y',lineY[3]).text(person.email || '');
+  gCard.append('text').attr('class','meta').attr('x',tx).attr('y',lineY[4]).text(person.phone || '');
 }
 
 function drawCATriangle(visibleNodesAll){
@@ -842,13 +916,14 @@ function drawCATriangle(visibleNodesAll){
 
   var cx = vx(ceoNode);
 
+  /* vârful triunghiului C pe marginea superioară a cardului CEO */
   var ceoTopY = vy(ceoNode) - nodeCfg.h/2;
   var bottomY = ceoTopY;
   var height = 220, halfWidth = 260;
 
-  var A = { x: cx - halfWidth, y: bottomY - height };
-  var B = { x: cx + halfWidth, y: bottomY - height };
-  var C = { x: cx, y: bottomY };
+  var A = { x: cx - halfWidth, y: bottomY - height }; // top-left
+  var B = { x: cx + halfWidth, y: bottomY - height }; // top-right
+  var C = { x: cx, y: bottomY };                      // bottom vertex
 
   // triangle
   ca.append('path')
@@ -856,13 +931,12 @@ function drawCATriangle(visibleNodesAll){
     .attr('fill', 'var(--tri-fill)')
     .attr('stroke', 'var(--tri-stroke)');
 
-  // label
   ca.append('text').attr('class','tri-label')
     .attr('x', cx).attr('y', bottomY - height/2 - 6)
     .attr('text-anchor','middle')
     .text('CONSILIUL DE ADMINISTRAȚIE');
 
-  // shareholders – carduri pe colțuri
+  // acționari – pe colțuri
   drawStaticCard(ca, TRG.tl, A.x, A.y - (nodeCfg.h/2));
   drawStaticCard(ca, TRG.tr, B.x, B.y - (nodeCfg.h/2));
 
@@ -872,7 +946,7 @@ function drawCATriangle(visibleNodesAll){
   ca.append('path').attr('class','authority')
     .attr('d', "M"+cx+","+ceoTopY+" L"+C.x+","+C.y+" L"+B.x+","+B.y);
 
-  // dotted attaches – doar pentru noduri vizibile
+  // dotted attaches (ex. Emil) – doar pentru noduri vizibile
   var visible = new Set(visibleNodesAll.map(function(n){ return String(n.data.id); }));
   var attachLeft  = dottedTargets.filter(function(d){ return d.boardAttach.indexOf('left')!==-1  && visible.has(String(d.id)); });
   var attachRight = dottedTargets.filter(function(d){ return d.boardAttach.indexOf('right')!==-1 && visible.has(String(d.id)); });
@@ -973,6 +1047,7 @@ function triggerSearch(forceCenter){
   }).map(function(r){ return String(r.id); });
 
   hits.forEach(function(id){ var n=findNodeById(id); if(n) openPathTo(n); });
+
   update();
 
   var focused=null, i;
@@ -991,7 +1066,6 @@ document.getElementById('btnFullscreen').addEventListener('click', function(){
 /* ===== Collapse / Expand All (toggle) ===== */
 var allCollapsed = false;
 function collapseToCEOLevel(){
-  // depth: VROOT=0, CEO=1 → păstrăm doar nivelul 1 deschis (CEO + BU)
   root.each(function(d){
     if(d.depth >= 2 && d.children){ d._children=d.children; d.children=null; }
     if(d.depth < 2 && d._children){ d.children=d._children; d._children=null; }
@@ -1034,7 +1108,7 @@ function cloneForCurrentView(){
   addSvgNamespaces(clone);
   inlineStylesForExport(clone);
   var gClone=clone.querySelector('g');
-  if(gClone) gClone.setAttribute('transform',''); // remove current zoom transform
+  if(gClone) gClone.setAttribute('transform',''); // remove zoom transform
   clone.setAttribute('viewBox', [x0,y0,w,h].join(' '));
   return { clone: clone, widthCss:Math.round(chartBox.width), heightCss:Math.round(chartBox.height) };
 }
@@ -1101,25 +1175,28 @@ function showTooltip(ev,d){
   else if(d.data.id==='BU_PROD'){ lines.push('Business Units – Productive'); }
   else if(d.data.title){ lines.push(d.data.title); }
 
-  if(d.data.id!=='BU_ADMIN' && d.data.id!=='BU_PROD'){
-    var contacts = [];
-    if(d.data.location) contacts.push(d.data.location);
-    if(d.data.email) contacts.push(d.data.email);
-    if(d.data.phone) contacts.push(d.data.phone);
-    if(contacts.length) lines.push(contacts.join(' • '));
+  if(d.data.id!=='BU_ADMIN' && d.data.id!=='BU_PROD' && !d.data.isLayer){
+    if(d.data.location) lines.push(d.data.location);
+    if(d.data.email) lines.push(d.data.email);
+    if(d.data.phone) lines.push(d.data.phone);
   }
 
-  var rep = REPORTS[d.data.id];
-  if(d.data.id==='BU_ADMIN' || d.data.id==='BU_PROD'){
+  // numere (după noile reguli)
+  if (d.data.id === 'BU_ADMIN' || d.data.id === 'BU_PROD') {
     var totalBU = LANE_TOTALS[d.data.id] || 0;
     lines.push('Total în unitate: ' + totalBU);
-  }else if(rep){
+  } else if (d.data.isLayer) {
+    lines.push('Total în unitate: ' + (LAYER_TOTALS_MAP[d.data.id] || 0));
+  } else {
     var ceoId = (TRG && TRG.b) ? String(TRG.b.id) : null;
-    if(String(d.data.id)===ceoId){
-      lines.push('raporti total: ' + (rep.total || 0));
-    }else if((rep.total||0)>0){
-      if(rep.direct===rep.total) lines.push('raporti direct: ' + rep.direct);
-      else lines.push('raporti direct: ' + rep.direct + ' • ' + 'raporti total: ' + rep.total);
+    var rep = REPORTS[d.data.id];
+    if (rep) {
+      if (String(d.data.id) === ceoId) {
+        lines.push('raporti total: ' + (rep.total || 0));
+      } else if ((rep.total || 0) > 0) {
+        if (rep.direct === rep.total) lines.push('raporti direct: ' + rep.direct);
+        else lines.push('raporti direct: ' + rep.direct + ' • ' + 'raporti total: ' + rep.total);
+      }
     }
   }
 
