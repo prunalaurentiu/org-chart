@@ -254,7 +254,7 @@ function parseData(txt){
       email: String(r.email || '').trim(),
       phone: String(r.phone || '').trim(),
       nodeType: nodeType,
-      layer: layerFlag,         // păstrăm textul original (ex: "layer")
+      layer: layerFlag,
       isLayer: isLayer,
       order: (String(r.order||'').trim()===''? null : +r.order)
     };
@@ -274,6 +274,10 @@ var LANE_TOTALS = { BU_ADMIN: 0, BU_PROD: 0 };
 var lastSearchQuery = '';
 var TEAM_COLOR = {};
 var STATE_APPLIED = false;
+
+/* === Logo în triunghi === */
+const LOGO_URL  = 'assets/logo.png'; // pune logo-ul tău PNG în acest path
+const LOGO_SIZE = { w: 150, h: 48 }; // ajustează după nevoie
 
 var VROOT = '__ROOT__';
 var LANE_BASE = 180;
@@ -405,7 +409,7 @@ function rebuildAll(rows){
   TRG = getTriangleMembers(ALL);
   dottedTargets = ALL.filter(function(d){ return d.boardAttach && d.boardAttach.length; });
 
-  // exclude actionarii (triangle-only)
+  // exclude acționarii (triangle-only)
   var ORG_BASE = ALL.filter(function(d){ var v=(d.boardVertex||'').toLowerCase(); return v!=='top-left' && v!=='top-right'; })
                     .map(function(d){ return Object.assign({}, d); });
 
@@ -429,9 +433,6 @@ function rebuildAll(rows){
     var emil = ORG.find(function(d){ return String(d.id)==='2'; }); if(emil) emil.parentId = BU_ADMIN.id;
   }
   if(CEO_ID){ ORG.push(BU_ADMIN, BU_PROD); }
-
-  // (dacă aveai spacere pentru Stefania, le putem elimina acum — layerele rezolvă overflow-ul)
-  // -- eliminat SPACER_STEF --
 
   withRoot = [{ id:VROOT, parentId:'', name:'', title:'' }].concat( ORG.map(function(d){ var c=Object.assign({},d); c.parentId = c.parentId || VROOT; return c; }) );
 
@@ -464,7 +465,7 @@ function computeReportCounts(){
   function isLayerNode(n){ return !!(n && n.data && n.data.isLayer); }
   function isSpacer(n){ return !!(n && n.data && n.data.isSpacer); }
 
-  // Construim arborele „efectiv” (ignorând layerele, BU-urile și VROOT)
+  // arborele efectiv (ignorăm layerele, BU-urile și VROOT)
   var peopleNodes = nodesAll.filter(function(n){
     return n.data && !isSpecialId(n.data.id) && !isSpacer(n) && !isLayerNode(n);
   });
@@ -503,7 +504,7 @@ function computeReportCounts(){
     REPORTS[id] = { direct: direct, total: total };
   });
 
-  // Totaluri pentru LAYERE (numărăm descendenți non-layer)
+  // totaluri pentru LAYERE (numărăm descendenți non-layer)
   LAYER_TOTALS_MAP = {};
   function countNonLayerDescFrom(node){
     var cnt=0;
@@ -665,12 +666,11 @@ function collapseSubtree(n){
   (n._children||[]).forEach(collapseSubtree);
 }
 function toggle(d){
-  // dacă e doar spacer/layer cu copii „goi”, nu facem nimic special aici
   var opening = !!d._children;
   if(d.children){ d._children=d.children; d.children=null; }
   else{ d.children=d._children; d._children=null; }
 
-  // Când deschidem BU: doar managerii direcți (layerele vor rămâne vizibile, dar echipele lor colapsate)
+  // Când deschidem BU: doar managerii direcți (layerele rămân vizibile, echipele lor colapsate)
   if(opening && (d.data.id==='BU_ADMIN' || d.data.id==='BU_PROD')){
     (d.children||[]).forEach(function(c){ collapseSubtree(c); });
   }
@@ -836,7 +836,7 @@ function getCountsText(d){
     var n = LANE_TOTALS[d.data.id] || 0;
     return 'total în unitate: ' + n;
   }
-  // Layere – doar total în unitate (ignorăm layerele în numărătoare)
+  // Layere – doar total în unitate
   if (d.data.isLayer) {
     var totalL = LAYER_TOTALS_MAP[d.data.id] || 0;
     return 'total în unitate: ' + totalL;
@@ -931,10 +931,28 @@ function drawCATriangle(visibleNodesAll){
     .attr('fill', 'var(--tri-fill)')
     .attr('stroke', 'var(--tri-stroke)');
 
-  ca.append('text').attr('class','tri-label')
-    .attr('x', cx).attr('y', bottomY - height/2 - 6)
-    .attr('text-anchor','middle')
-    .text('CONSILIUL DE ADMINISTRAȚIE');
+  // centru pe verticală al triunghiului
+var midY = bottomY - height/2;
+
+// LOGO PNG centrat *deasupra* label-ului
+if (LOGO_URL) {
+  var logoY = midY - LOGO_SIZE.h - 8; // puțin deasupra centrului
+  ca.append('image')
+    .attr('href', LOGO_URL)
+    .attr('x', cx - LOGO_SIZE.w / 2)
+    .attr('y', logoY)
+    .attr('width', LOGO_SIZE.w)
+    .attr('height', LOGO_SIZE.h)
+    .attr('preserveAspectRatio', 'xMidYMid meet')
+    .attr('opacity', 0.95)
+    .style('pointer-events', 'none');
+}
+
+// label sub logo
+ca.append('text').attr('class','tri-label')
+  .attr('x', cx).attr('y', midY + 10) // puțin sub centrul triunghiului
+  .attr('text-anchor','middle')
+  .text('CONSILIUL DE ADMINISTRAȚIE');
 
   // acționari – pe colțuri
   drawStaticCard(ca, TRG.tl, A.x, A.y - (nodeCfg.h/2));
