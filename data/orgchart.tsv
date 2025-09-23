@@ -31,11 +31,11 @@ L1_3A3	L1_3A	Marian Begu	Inginer Electroenergetic		Craiova HQ	assets/L1_3A3.jpg	
 L1_3B1	L1_3B	Ioana-Diana Dinca	Operator Facturare		Craiova HQ	assets/L1_3B1.jpg			Administrative			0734007027			
 L1_3B2	L1_3B	Ileana Sirbi	Operator Facturare		Craiova HQ	assets/L1_3B2.jpg			Administrative		ileana.sirbi@dumagas.ro	0734007027			
 L1_3B3	L1_3B	Liliana-Nicoleta Vlaescu	Operator Facturare		Craiova HQ				Administrative		liliana.vlaescu@dumagas.com	0734007027			
-L1_3B4	L1_3B	Aurelia Velica	Economist		Craiova HQ				Administrative		aurelia.velica@dumagas.com				
+L1_3B4	L1_3B	Anda Tomescu	Economist		Craiova HQ				Administrative		anda.tomescu@dumagas.com				
 L1_3B5	L1_3B	Lavinia Bogdan	Economist		Craiova HQ				Administrative		lavinia.bogdan@dumagas.com	0730010789			
 L1_4A	4	HR, PEOPLE & CULTURE							Administrative				layer	1	1
 L1_4A1	L1_4A	Cristina Dinu	Specialist HR		Craiova HQ				Administrative		cristina.dinu@dumagas.ro	0730160195			
-L1_4A2	L1_4A	Catalina Visan	Specialist HR		Craiova HQ				Administrative						
+L1_4A2	L1_4A	Catalina Visan	Specialist HR		Craiova HQ				Administrative		visan.catalina@dumagas.ro	0724225257			
 L1_5A	5	SERVICE							Administrative				layer	1	1
 L1_5A1	L1_5A	Cristi Novac	Team Lead		Craiova Service	assets/L1_5A1.jpg			Administrative			0726747167			
 L1_5A1b	L1_5A1	Constantin Bunaiasu	Mecanic		Craiova Service				Administrative						
@@ -80,16 +80,22 @@ L1_11A	11	FLOTA SUBCONTRACTORI							Productive				layer	1	1
 L1_10A	10	DOMESTIC GERMANIA							Productive				layer	1	1
 L1_10A1	L1_10A	Laura Puica	Transport Manager cu Rol Administrativ		Craiova HQ	assets/L1_10A1.jpg			Productive		laura.puica@dumagas.ro	0720700614			
 L1_10A2	L1_10A	Lavinel Cruceru	Transport Manager cu Rol Tehnic		Craiova HQ	assets/L1_10A2.jpg			Productive		lavinel.cruceru@dumagas.ro	0728304238			
+L1_10A5	L1_10A	Ion Mutascu	Dispecerat / Transport Management		Craiova HQ				Productive		ion.mutascu@dumagas.de	0739694438			
+L1_10A4	L1_10A	Alexandra Pasare	Dispecerat / Transport Management		Craiova HQ				Productive		alexandra.pasare@dumagas.de	0739661075			
+L1_10A6	L1_10A	Arina Didu	Dispecerat / Transport Management		Craiova HQ				Productive		arina.didu@dumagas.de	0725705848			
+L1_10A7	L1_10A	Bogdan Goiceanu	Dispecerat / Transport Management		Craiova HQ				Productive		bogdan.goiceanu@dumagas.de	0739694422			
 L1_10A3	L1_10A	Eugen Calusaru	Driver's Manager		Craiova HQ				Productive		eugen.calusaru@dumagas.ro	0731350229			
-L1_10A2a	L1_10A2	Bogdan Goiceanu	Dispecerat / Transport Management		Craiova HQ				Productive		bogdan.goiceanu@dumagas.de	0739694422			
-L1_10A2b	L1_10A2	Alexandru Culcescu	Dispecerat / Transport Management		Craiova HQ				Productive		alexandru.culcescu@dumagas.de				
-L1_10Ac	L1_10A2	Arina Didu	Dispecerat / Transport Management		Craiova HQ				Productive		arina.didu@dumagas.de	0725705848			
 L1_10Ad	L1_10A2	Denisa Alexandrescu	Operator Introducere si Validare Date		Craiova HQ				Productive		denisa.alexandrescu@dumagas.com	0739694429			
-L1_10A1a	L1_10A1	Alexandra Pasare	Dispecerat / Transport Management		Craiova HQ				Productive		alexandra.pasare@dumagas.de	0739661075			
-L1_10A1b	L1_10A1	Ion Mutascu	Dispecerat / Transport Management		Craiova HQ				Productive		ion.mutascu@dumagas.de	0739694438			
-L1_10A1c	L1_10A1	Iasmina Golea	Operator Introducere si Validare Date		Craiova HQ				Productive		iasmina.golea@dumagas.com	0739694431			
+L1_10A8	L1_10A	Alexandru Petcu	Dispecerat / Transport Management		Craiova HQ				Productive		alexandru.petcu@dumas.de	0735008699			
+L1_10A9	L1_10A	Simona Liculescu	Dispecerat / Transport Management		Craiova HQ				Productive		simona.liculescu@dumagas.de	0730010533			
+L1_10A10	L1_10A	Andrei Stuparu	Dispecerat / Transport Management		Craiova HQ				Productive		andrei.stuparu@dumagas.de	0734007055			
+L1_10Ae	L1_10A1	Cristiana Valuga	Operator Introducere si Validare Date		Craiova HQ				Productive		cristiana.valuga@dumagas.de				
 L1_10A3a	L1_10A3	Adelin Calusaru	Sef Regional		Craiova HQ				Productive						
 L1_10A3b	L1_10A3	Alexandru Baroana	Sef Regional		Craiova HQ				Productive						
 L1_10A3c	L1_10A3	Nicu Bratasanu	Sef Regional		Craiova HQ				Productive						
 L1_10A3d	L1_10A3	Alin Gavrila	Sef Regional		Craiova HQ				Productive						
 L1_10A3e	L1_10A3	Catalin Herman	Sef Regional		Craiova HQ				Productive						
+L1_10A3f	L1_10A3	Marian Preoteasa	Sef Regional		Craiova HQ				Productive						
+L1_10A3g	L1_10A3	Dumitru Stoican	Sef Regional		Craiova HQ				Productive						
+L1_10A3h	L1_10A3	Florin Lupu	Sef Regional		Craiova HQ				Productive						
+L1_10A3i	L1_10A3	Bogdan Cucu	Sef Regional		Craiova HQ				Productive						
